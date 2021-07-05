@@ -1,0 +1,16 @@
+{
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "src/**/*.test.ts"
+    ],
+    "compilerOptions": {
+        "module": "CommonJS",
+        "outDir": "build",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "target": "ES2015",
+        "rootDir": "src"
+    }
+}
