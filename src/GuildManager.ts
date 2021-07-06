@@ -1,10 +1,26 @@
-import {Client, Guild, OverwriteResolvable, TextChannel, VoiceChannel} from "discord.js";
+import {
+    Client,
+    Guild,
+    GuildMember,
+    OverwriteResolvable,
+    PermissionResolvable,
+    TextChannel,
+    VoiceChannel
+} from "discord.js";
 import Store from "./Store";
+import {CATEGORY_CHANNEL_ID} from "./Settings";
 
 export type ChannelsSet = {
     textChannel: TextChannel
     voiceChannel: VoiceChannel
+    number: number
 }
+
+type RawChannelsSet = {
+    textChannel: string,
+    voiceChannel: string,
+    number: number
+}[]
 
 export default interface GuildManager {
     createChannelsSet(guild: Guild): ChannelsSet | Promise<ChannelsSet>;
@@ -16,6 +32,23 @@ export default interface GuildManager {
     closeChannelsSet(channelsSet: ChannelsSet): void
 
     clearChannel(textChannel: TextChannel): void
+
+    restrictTextChannelToMembers(textChannel: TextChannel, members: GuildMember[]): Promise<void>;
+
+    openAndBlockChannelsSet(channelsSet: ChannelsSet): Promise<void>;
+
+    deleteChannelsSet(channelsSet: ChannelsSet): void;
+
+    demuteChannel(voiceChannel: VoiceChannel, members: GuildMember[]): void;
+
+    muteChannel(voiceChannel: VoiceChannel, members: GuildMember[]): void;
+
+    moveMembersToVoiceChannel(voiceChannel: VoiceChannel, fallbackVoiceChannel: VoiceChannel): void
+}
+
+type PartialsPermissions = {
+    deny?: PermissionResolvable,
+    allow?: PermissionResolvable
 }
 
 export class DiscordGuildManager implements GuildManager {
@@ -23,25 +56,25 @@ export class DiscordGuildManager implements GuildManager {
     }
 
     async createChannelsSet(guild: Guild): Promise<ChannelsSet> {
-        const category = guild.channels.cache.get('861608867728588832')
-        const channels = this.getChannels()
-        let number = DiscordGuildManager.findNextChannelNumber(channels)
+        const category = guild.channels.resolve(CATEGORY_CHANNEL_ID)
+        const channelsSets = this.getChannelsSets()
+        let number = this.findNextChannelsSetNumber()
 
         const name = `Loup Garou #${number}`
         const textChannel = await guild.channels.create(name, {type: 'text', parent: category})
         const voiceChannel = await guild.channels.create(name, {type: 'voice', parent: category})
 
-        channels[number] = {textChannel: textChannel.id, voiceChannel: voiceChannel.id}
+        channelsSets.push({textChannel: textChannel.id, voiceChannel: voiceChannel.id, number})
         this.store.save()
 
-        return {textChannel, voiceChannel}
+        return {textChannel, voiceChannel, number}
     }
 
-    private static findNextChannelNumber(channels: object): number {
+    private findNextChannelsSetNumber(): number {
         let expectedNumber = 1
 
-        for (const number of Object.keys(channels)) {
-            if (Number.parseInt(number) !== expectedNumber) {
+        for (const channelsSet of this.getChannelsSets()) {
+            if (channelsSet.number !== expectedNumber) {
                 break
             }
 
@@ -52,15 +85,12 @@ export class DiscordGuildManager implements GuildManager {
     }
 
     async clearChannels(guild: Guild): Promise<void> {
-        const channels = this.getChannels()
-
-        for (const number of Object.keys(channels)) {
-            const channelsSet = channels[number]
+        for (const channelsSet of this.getChannelsSets()) {
             await guild.channels.cache.get(channelsSet.textChannel).delete()
             await guild.channels.cache.get(channelsSet.voiceChannel).delete()
-            delete channels[number]
         }
 
+        this.store.setValue('channelsSets', [])
         this.store.save()
     }
 
@@ -71,50 +101,118 @@ export class DiscordGuildManager implements GuildManager {
 
     async closeChannelsSet(channelsSet: ChannelsSet): Promise<void> {
         const {textChannel, voiceChannel} = channelsSet
-        const members = voiceChannel.members
+        const members = voiceChannel.members.array()
 
-        if (!(textChannel instanceof TextChannel)) {
-            return
-        }
-
-        const permissions: OverwriteResolvable[] = [
-            {
-                id: textChannel.guild.roles.everyone,
-                deny: ['VIEW_CHANNEL']
-            }
-        ]
-
-        members.forEach(member => {
-            permissions.push({
-                id: member,
-                allow: ['VIEW_CHANNEL']
-            })
-        })
-
-        await textChannel.overwritePermissions(permissions)
-        await voiceChannel.overwritePermissions(permissions)
+        await this.restrictPermissionsToMembers(
+            textChannel,
+            members,
+            {deny: ['VIEW_CHANNEL']},
+            {allow: ['VIEW_CHANNEL']}
+        )
     }
 
     findGameChannelsSet(textChannel: TextChannel): ChannelsSet {
-        const channels = this.getChannels()
+        const channelsSets = this.getChannelsSets()
+        const filteredChannelsSets = channelsSets.filter(({textChannel: currentTextChannel}) => currentTextChannel === textChannel.id)
 
-        for (const number in channels) {
-            if (channels[number].textChannel === textChannel.id) {
-                const voiceChannel = this.client.channels.cache.get(channels[number].voiceChannel)
+        if (filteredChannelsSets.length === 0) {
+            return null
+        }
 
-                if (voiceChannel instanceof VoiceChannel) {
-                    return {
-                        textChannel: textChannel,
-                        voiceChannel: voiceChannel
-                    }
-                }
+        const channelsSet = filteredChannelsSets[0]
+        const voiceChannel = this.client.channels.cache.get(channelsSet.voiceChannel)
+
+        if (voiceChannel instanceof VoiceChannel) {
+            return {
+                textChannel: textChannel,
+                voiceChannel: voiceChannel,
+                number: channelsSet.number
             }
         }
 
         return null
     }
 
-    getChannels(): { textChannel: string, voiceChannel: string }[] {
-        return this.store.getValue<{ textChannel: string, voiceChannel: string }[]>('channels', [])
+    getChannelsSets(): RawChannelsSet {
+        return this.store.getValue<RawChannelsSet>('channelsSets', [])
+    }
+
+    async restrictTextChannelToMembers(textChannel: TextChannel, members: GuildMember[]): Promise<void> {
+        await this.restrictPermissionsToMembers(
+            textChannel,
+            members,
+            {deny: ['VIEW_CHANNEL']},
+            {allow: ['VIEW_CHANNEL'], deny: ['SEND_MESSAGES']}
+        )
+    }
+
+    async openAndBlockChannelsSet({textChannel, voiceChannel}: ChannelsSet): Promise<void> {
+        const everyone = textChannel.guild.roles.everyone
+
+        await textChannel.overwritePermissions([{
+            id: everyone,
+            allow: ['VIEW_CHANNEL'],
+            deny: ['SEND_MESSAGES']
+        }])
+
+        await voiceChannel.overwritePermissions([{
+            id: everyone,
+            allow: ['VIEW_CHANNEL'],
+            deny: ['SPEAK']
+        }])
+    }
+
+    async deleteChannelsSet({textChannel, voiceChannel, number}: ChannelsSet): Promise<void> {
+        await textChannel.delete()
+        await voiceChannel.delete()
+        const newChannelsSets = this.getChannelsSets().filter(({number: currentNumber}) => currentNumber !== number)
+        this.store.setValue('channelsSets', newChannelsSets)
+        this.store.save()
+    }
+
+    async demuteChannel(voiceChannel: VoiceChannel, members: GuildMember[]): Promise<void> {
+        // TODO
+
+        // await this.restrictPermissionsToMembers(
+        //     voiceChannel,
+        //     members,
+        //     {deny: ['VIEW_CHANNEL']},
+        //     {allow: ['VIEW_CHANNEL', 'SPEAK']}
+        // )
+    }
+
+    private async restrictPermissionsToMembers(channel: TextChannel | VoiceChannel, members: GuildMember[], everyonePermissions: PartialsPermissions, membersPermissions: PartialsPermissions) {
+        const permissions: OverwriteResolvable[] = [
+            {
+                id: channel.guild.roles.everyone,
+                ...everyonePermissions
+            }
+        ]
+
+        members.forEach(member => {
+            permissions.push({
+                id: member,
+                ...membersPermissions
+            })
+        })
+
+        await channel.overwritePermissions(permissions)
+    }
+
+    async muteChannel(voiceChannel: VoiceChannel, members: GuildMember[]): Promise<void> {
+        // TODO
+
+        // await this.restrictPermissionsToMembers(
+        //     voiceChannel,
+        //     members,
+        //     {deny: ['VIEW_CHANNEL', 'SPEAK']},
+        //     {allow: ['VIEW_CHANNEL'], deny: ['SPEAK']}
+        // )
+    }
+
+    async moveMembersToVoiceChannel(voiceChannel: VoiceChannel, fallbackVoiceChannel: VoiceChannel): Promise<void> {
+        for (const member of voiceChannel.members.array()) {
+            await member.voice.setChannel(fallbackVoiceChannel)
+        }
     }
 }

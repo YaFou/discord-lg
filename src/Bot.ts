@@ -51,8 +51,10 @@ export default class Bot {
         this.interactor.reply(message, "Le commande entrée est inconnu. Pour connaître les commandes disponibles, entrez `!lg " + this.helpCommand.getName() + "`.")
     }
 
-    setHelpCommand(command: Command) {
+    setHelpCommand(command: Command): this {
         this.addCommand(command)
         this.helpCommand = command
+
+        return this
     }
 }

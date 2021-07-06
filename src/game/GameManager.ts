@@ -1,20 +1,23 @@
 import GuildManager, {ChannelsSet} from "../GuildManager";
-import {Collection, GuildMember, Snowflake, TextChannel} from "discord.js";
-import Game, {GameState} from "./Game";
+import {Collection, GuildMember, Snowflake, VoiceChannel} from "discord.js";
+import Game from "./Game";
 import Interactor from "../Interactor";
-import Role, {getCamp} from "./Role";
 import Player from "./Player";
+import WerewolfRole from "./roles/WerewolfRole";
+import VillagerRole from "./roles/VillagerRole";
+import {Camp, filterPlayersByCamp} from "./roles/Role";
+import {DESTROY_TIME, FALLBACK_CHANNEL_ID} from "../Settings";
 
 export default class GameManager {
     constructor(private interactor: Interactor, private guildManager: GuildManager) {
     }
 
     create(channelsSet: ChannelsSet, members: Collection<Snowflake, GuildMember>): Game {
-        let nextRole = Role.WEREWOLF
+        let nextRole = new WerewolfRole()
         members.sort(() => Math.random() - 0.5)
 
         const players = members.map(member => {
-            nextRole = nextRole === Role.VILLAGER ? Role.WEREWOLF : Role.VILLAGER
+            nextRole = nextRole instanceof VillagerRole ? new WerewolfRole() : new VillagerRole()
 
             return new Player(member, nextRole)
         })
@@ -23,43 +26,81 @@ export default class GameManager {
     }
 
     async start(game: Game) {
-        for (const player of game.players) {
-            await this.interactor.sendMP(player.member.user, `Tu es **${player.role.toLowerCase()}** dans le camp **${getCamp(player.role).toLowerCase()}**.`)
-        }
+        await this.initGame(game)
+        const {textChannel, voiceChannel} = game.channelsSet
 
-        const textChannel = game.channelsSet.textChannel
-
-        while (!game.isFinished()) {
+        while (true) {
             const state = game.nextState()
-            switch (state) {
-                case GameState.VOTE:
-                    await this.voteState(textChannel, game)
-                    break
 
-                case GameState.WEREWOLVES:
-                    await this.werewolvesState(textChannel, game)
-                    break
+            if (game.isSunset) {
+                await this.interactor.send(textChannel, 'La nuit commence à tomber...')
+            }
+
+            if (game.isNewDay) {
+                const {textChannel} = game.channelsSet
+                await this.interactor.send(textChannel, `Le soleil se lève, le jour ${game.day} commence...`)
+                await this.showDeaths(game)
+            }
+
+            await state.isVoiceEnabled() ?
+                this.guildManager.demuteChannel(voiceChannel, game.getMembers()) :
+                this.guildManager.muteChannel(voiceChannel, game.getMembers())
+
+            await this.guildManager.restrictTextChannelToMembers(textChannel, state.filterPlayersAvailableToRead(game.players).map(player => player.member))
+            await state.run(game, this.interactor)
+
+            if (game.isFinished()) {
+                break
             }
 
             await this.guildManager.clearChannel(game.channelsSet.textChannel)
         }
 
-        await this.interactor.send(textChannel, `La partie est terminée ! Le camp victorieux est le camp **${getCamp(game.players[0].role).toLowerCase()}**, bravo !`)
+        await this.terminateGame(game)
     }
 
-    private removePlayer(game: Game, player: Player) {
-        game.players = game.players.splice(game.players.indexOf(player), 1)
+    private async showDeaths(game: Game) {
+        for (const player of game.deathThisNight) {
+            await this.interactor.send(game.channelsSet.textChannel, `Cette nuit, ${player.member} a été tué. Il était **${player.role.name}**.`)
+        }
+
+        game.resetDeaths()
     }
 
-    private async voteState(textChannel: TextChannel, game: Game) {
-        const player = await this.interactor.playerPoll(textChannel, "Le village doit voter pour tuer quelqu'un.", game.players, 120);
-        this.removePlayer(game, player)
-        await this.interactor.send(textChannel, `Le joueur ${player.member} a été désigné par le village pour être tué !`)
+    private async initGame(game: Game) {
+        for (const player of game.players) {
+            await this.interactor.sendMP(player.member.user, `Tu es **${player.role.name}** dans le camp **${player.role.camp}**.`)
+            await this.interactor.sendMP(player.member.user, `**Ton but :** ${player.role.description}`)
+
+            if (player.role.camp === Camp.WEREWOLVES) {
+                const otherWerewolves = filterPlayersByCamp(game.players, Camp.WEREWOLVES)
+                    .filter(currentPlayer => currentPlayer !== player)
+
+                if (otherWerewolves.length) {
+                    const mentions = otherWerewolves.map(player => player.member.toString()).join(', ')
+                    this.interactor.sendMP(player.member.user, `Tes autres alliés loups garous sont ${mentions}.`)
+                } else {
+                    this.interactor.sendMP(player.member.user, "Tu n'as pas d'alliés loups garous...")
+                }
+            }
+        }
     }
 
-    private async werewolvesState(textChannel: TextChannel, game: Game) {
-        const player = await this.interactor.playerPoll(textChannel, 'Quelle victime voulez vous dévorez ?', game.players, 120);
-        this.removePlayer(game, player)
-        await this.interactor.send(textChannel, `Vous avez tué ${player.member} !`)
+    private async terminateGame(game: Game) {
+        const {textChannel, voiceChannel} = game.channelsSet
+        await this.guildManager.openAndBlockChannelsSet(game.channelsSet)
+        await this.showDeaths(game)
+        await this.interactor.send(textChannel, `La partie est terminée ! Le camp victorieux est le camp **${game.players[0].role.camp}**, bravo !`)
+        await this.interactor.send(textChannel, `Les salons de cette partie vont être supprimés dans 1 minute.`)
+
+        setTimeout(async () => {
+            const fallbackVoiceChannel = voiceChannel.guild.channels.resolve(FALLBACK_CHANNEL_ID)
+
+            if (fallbackVoiceChannel instanceof VoiceChannel) {
+                await this.guildManager.moveMembersToVoiceChannel(voiceChannel, fallbackVoiceChannel)
+            }
+
+            this.guildManager.deleteChannelsSet(game.channelsSet)
+        }, 1000 * DESTROY_TIME)
     }
 }

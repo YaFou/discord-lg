@@ -7,6 +7,8 @@ export default interface Store {
     load(): void
 
     getValue<T>(key: string, defaultValue: T): T
+
+    setValue<T>(key: string, value: T): T;
 }
 
 export abstract class AbstractStore implements Store {
@@ -20,10 +22,14 @@ export abstract class AbstractStore implements Store {
         let value = this.data[key]
 
         if (!value) {
-            value = this.data[key] = defaultValue
+            return this.setValue(key, defaultValue)
         }
 
         return value
+    }
+
+    setValue<T>(key: string, value: T): T {
+        return this.data[key] = value
     }
 }
 

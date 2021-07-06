@@ -1,20 +1,29 @@
 import Player from "./Player";
 import {ChannelsSet} from "../GuildManager";
-import {getCamp} from "./Role";
+import State from "./states/State";
+import WerewolvesState from "./states/WerewolvesState";
+import VoteState from "./states/VoteState";
+import {GuildMember} from "discord.js";
+import {Camp} from "./roles/Role";
 
 export default class Game {
-    state: GameState
-    day: number
+    state: State = null
+    day: number = 1
+    isNewDay: Boolean
+    isSunset: Boolean
+    deathThisNight: Player[] = []
+    isNight: Boolean = false
 
     constructor(public players: Player[], readonly channelsSet: ChannelsSet) {
-        this.state = null
-        this.day = 0
     }
 
-    nextState(): GameState {
-        this.state = this.state === GameState.VOTE ? GameState.WEREWOLVES : GameState.VOTE
+    nextState(): State {
+        this.state = this.state instanceof WerewolvesState ? new VoteState() : new WerewolvesState()
+        this.isNewDay = this.state instanceof VoteState
+        this.isSunset = this.state instanceof WerewolvesState
+        this.isNight = this.state instanceof WerewolvesState
 
-        if (this.state === GameState.VOTE) {
+        if (this.state instanceof VoteState) {
             this.day++
         }
 
@@ -22,25 +31,24 @@ export default class Game {
     }
 
     isFinished(): Boolean {
-        let camp = null
+        const camps = this.players.map(player => player.role.camp)
 
-        for (const player of this.players) {
-            if (!camp) {
-                camp = getCamp(player.role)
-
-                continue
-            }
-
-            if (camp !== getCamp(player.role)) {
-                return false
-            }
-        }
-
-        return true
+        return camps.includes(Camp.VILLAGE) ? !camps.includes(Camp.WEREWOLVES) : true
     }
-}
 
-export enum GameState {
-    WEREWOLVES,
-    VOTE
+    resetDeaths() {
+        this.deathThisNight = []
+    }
+
+    killPlayer(player: Player) {
+        this.players = this.players.filter(currentPlayer => currentPlayer !== player)
+
+        if (this.isNight) {
+            this.deathThisNight.push(player)
+        }
+    }
+
+    getMembers(): GuildMember[] {
+        return this.players.map(player => player.member)
+    }
 }

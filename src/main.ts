@@ -9,9 +9,8 @@ import ClearChannelsCommand from "./commands/ClearChannelsCommand";
 import StartCommand from "./commands/StartCommand";
 import HelpCommand from "./commands/HelpCommand";
 import GameManager from "./game/GameManager";
-import dotenv from 'dotenv'
-
-dotenv.config()
+import RolesCommand from "./commands/RolesCommand";
+import {BOT_TOKEN} from "./Settings";
 
 const client = new Client()
 
@@ -27,6 +26,7 @@ bot.addCommand(new NewGameCommand(bot))
     .addCommand(new ClearChannelsCommand(bot))
     .addCommand(new StartCommand(bot))
     .setHelpCommand(new HelpCommand(bot))
+    .addCommand(new RolesCommand(bot))
 
-client.login(process.env.BOT_TOKEN)
+client.login(BOT_TOKEN)
 logger.info('Bot connected')

@@ -1,10 +1,10 @@
-import {Client, DMChannel, GuildMember, Message, MessageEmbed, NewsChannel, TextChannel, User} from "discord.js";
+import {Client, DMChannel, Message, MessageEmbed, MessageReaction, NewsChannel, TextChannel, User} from "discord.js";
 import Player from "./game/Player";
 
 export default interface Interactor {
     reply(message: Message, answer: string | MessageEmbed): void;
 
-    send(channel: TextChannel | DMChannel | NewsChannel, message: string | MessageEmbed): void
+    send(channel: TextChannel | DMChannel | NewsChannel, message: string | MessageEmbed): Promise<Message>
 
     sendMP(user: User, message: string): void;
 
@@ -16,12 +16,18 @@ export class DiscordInteractor implements Interactor {
     }
 
     async reply(message: Message, answer: string | MessageEmbed): Promise<void> {
-        const content = answer instanceof MessageEmbed ? answer : `${message.author} | ${answer}`
+        const content = answer instanceof MessageEmbed ?
+            answer.setAuthor(
+                message.guild.members.resolve(message.author).displayName,
+                message.author.displayAvatarURL()
+            ) :
+            `${message.author} | ${answer}`
+
         await this.send(message.channel, content)
     }
 
-    async send(channel: TextChannel | DMChannel | NewsChannel, message: string | MessageEmbed): Promise<void> {
-        await channel.send(message)
+    async send(channel: TextChannel | DMChannel | NewsChannel, message: string | MessageEmbed): Promise<Message> {
+        return await channel.send(message)
     }
 
     async sendMP(user: User, message: string | MessageEmbed): Promise<void> {
@@ -29,34 +35,70 @@ export class DiscordInteractor implements Interactor {
     }
 
     async playerPoll(textChannel: TextChannel, question: string, players: Player[], time: number): Promise<Player> {
-        const votes = new Map<User, Player>()
+        const reactions = new Map<Player, string>()
+        const choices = new Map<User, MessageReaction>()
+        let messageText = `${question}\n`
 
-        const onMessage = async message => {
-            if (message.channel.id !== textChannel.id) {
+        const emojis = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫', '⚪']
+        let emojiIndex = 0
+
+        players.forEach(player => {
+            messageText += `${emojis[emojiIndex]} ${player.member}\n`
+            reactions.set(player, emojis[emojiIndex])
+            emojiIndex++
+        })
+
+        const message = await this.send(textChannel, messageText)
+
+        reactions.forEach(emoji => {
+            message.react(emoji)
+        })
+
+        const onReact = (reaction: MessageReaction, user: User) => {
+            if (reaction.message !== message || user.bot) {
                 return
             }
 
-            for (const player of players) {
-                if (message.mentions.has(player.member)) {
-                    votes.set(message.author, player)
-                    await message.react('white_check_mark')
+            if (![...reactions.values()].includes(reaction.emoji.toString())) {
+                reaction.users.remove(user)
 
-                    return
-                }
+                return
             }
 
-            await message.react('x')
+            if (choices.has(user)) {
+                const oldReaction = choices.get(user)
+                oldReaction.users.remove(user)
+            }
+
+            choices.set(user, reaction)
         }
 
-        this.client.on('message', onMessage)
+        this.client.on('messageReactionAdd', onReact)
 
-        return await new Promise<Player>(resolve => {
+        const reminders = [30, 10, 5]
+        reminders.forEach(reminder => {
+            if (time <= reminder) {
+                return
+            }
+
+            setTimeout(() => this.send(textChannel, `Plus que ${reminder} secondes pour voter.`), (time - reminder) * 1000)
+        })
+
+        return new Promise<Player>(resolve => {
             setTimeout(() => {
-                this.client.removeListener('message', onMessage)
-                const count = new Map<Player, number>(players.map(player => [player, 0]))
-                votes.forEach(player => count.set(player, count.get(player) + 1))
-                const entries = [...count.entries()].sort((a, b) => b[1] - a[1])
-                resolve(entries[0][0])
+                this.client.removeListener('messageReactionAdd', onReact)
+                const sortedReactions = message.reactions.cache.sort((a, b) => b.count - a.count)
+                const firstEmoji = sortedReactions.array()[0].emoji.toString()
+
+                for (const [player, emoji] of reactions.entries()) {
+                    if (emoji === firstEmoji) {
+                        resolve(player)
+
+                        return
+                    }
+                }
+
+                resolve(null)
             }, time * 1000)
         })
     }
