@@ -1,22 +1,34 @@
-import {AbstractCommand} from "./Command";
-import {Message} from "discord.js";
+import Command from "./Command";
+import {Message, TextChannel} from "discord.js";
+import Kernel from "../Kernel";
+import {trans} from "../Translator";
+import DiscordRoom from "../discord/DiscordRoom";
 
-export default class NewGameCommand extends AbstractCommand {
+export default class NewGameCommand extends Command {
+    constructor(private kernel: Kernel) {
+        super('newgame', 'Créer une nouvelle partie de Loups Garous');
+    }
+
     async execute(message: Message): Promise<void> {
-        const channelsSet = await this.guildManager.createChannelsSet(message.guild)
-        const invite = await channelsSet.voiceChannel.createInvite({maxAge: 30 * 60})
-        this.interactor.reply(message,
-            'Des salons ont été créés pour une nouvelle partie.\n' +
-            `Tu peux le rejoindre le salon textuel ici : ${channelsSet.textChannel},\n` +
-            `et le salon vocal ici : ${invite} !`
+        if (!(message.channel instanceof TextChannel)) {
+            return
+        }
+
+        const guildManager = this.kernel.getGuildManager(message.guild)
+        const {room} = await guildManager.newGame()
+
+        if (!(room instanceof DiscordRoom)) {
+            return
+        }
+
+        const interactor = this.kernel.createInteractor(message.channel)
+        const voiceChannelInvite = await room.voiceChannel.createInvite();
+        await interactor.reply(
+            message,
+            trans('commands.newgame.success', {
+                textChannel: room.textChannel.toString(),
+                voiceChannelInvite: voiceChannelInvite.toString()
+            })
         )
-    }
-
-    getName(): string {
-        return 'newgame'
-    }
-
-    getDescription(): string {
-        return 'Crée une nouvelle partie de Loup Garou'
     }
 }

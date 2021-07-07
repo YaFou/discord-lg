@@ -1,0 +1,6 @@
+{
+    "commands.newgame.success": "Une nouvelle partie a été créé.\n\n**Tu peux rejoindre le salon vocal %voiceChannelInvite% et le salon textuel ici : %textChannel%.**\nInvite tes amis et commence la partie avec la commande `!lg start`.",
+
+    "game.global.newDay": "Le soleil se lève, le jour %day% commence.",
+    "game.global.roomName": "Loup Garou #%id%"
+}
