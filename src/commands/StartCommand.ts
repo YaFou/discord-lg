@@ -1,6 +1,5 @@
 import {AbstractCommand} from "./Command";
-import {Message, TextChannel, VoiceChannel} from "discord.js";
-import {FALLBACK_CHANNEL_ID} from "../Settings";
+import {Message, TextChannel} from "discord.js";
 
 export default class StartCommand extends AbstractCommand {
     async execute(message: Message): Promise<void> {

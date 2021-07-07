@@ -14,3 +14,4 @@ export enum Camp {
 export function filterPlayersByCamp(players: Player[], camp: Camp): Player[] {
     return players.filter(player => player.role.camp === camp)
 }
+

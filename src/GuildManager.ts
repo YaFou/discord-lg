@@ -142,7 +142,7 @@ export class DiscordGuildManager implements GuildManager {
             textChannel,
             members,
             {deny: ['VIEW_CHANNEL']},
-            {allow: ['VIEW_CHANNEL'], deny: ['SEND_MESSAGES']}
+            {allow: ['VIEW_CHANNEL']}
         )
     }
 

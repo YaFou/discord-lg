@@ -4,22 +4,24 @@ import Game from "./Game";
 import Interactor from "../Interactor";
 import Player from "./Player";
 import WerewolfRole from "./roles/WerewolfRole";
-import VillagerRole from "./roles/VillagerRole";
 import {Camp, filterPlayersByCamp} from "./roles/Role";
 import {DESTROY_TIME, FALLBACK_CHANNEL_ID} from "../Settings";
+import ClairvoyantRole from "./roles/ClairvoyantRole";
+import CupidRole from "./roles/CupidRole";
 
 export default class GameManager {
     constructor(private interactor: Interactor, private guildManager: GuildManager) {
     }
 
     create(channelsSet: ChannelsSet, members: Collection<Snowflake, GuildMember>): Game {
-        let nextRole = new WerewolfRole()
+        const roles = [new ClairvoyantRole(), new WerewolfRole(), new CupidRole()]
+        let rolesIndex = -1
         members.sort(() => Math.random() - 0.5)
 
         const players = members.map(member => {
-            nextRole = nextRole instanceof VillagerRole ? new WerewolfRole() : new VillagerRole()
+            rolesIndex++
 
-            return new Player(member, nextRole)
+            return new Player(member, roles[rolesIndex])
         })
 
         return new Game(players, channelsSet)
@@ -90,7 +92,13 @@ export default class GameManager {
         const {textChannel, voiceChannel} = game.channelsSet
         await this.guildManager.openAndBlockChannelsSet(game.channelsSet)
         await this.showDeaths(game)
-        await this.interactor.send(textChannel, `La partie est terminée ! Le camp victorieux est le camp **${game.players[0].role.camp}**, bravo !`)
+
+        if (game.isCoupleWin()) {
+            await this.interactor.send(textChannel, 'La partie est terminée ! Le **couple** a gagné, bravo !')
+        } else {
+            await this.interactor.send(textChannel, `La partie est terminée ! Le camp victorieux est le camp **${game.players[0].role.camp}**, bravo !`)
+        }
+
         await this.interactor.send(textChannel, `Les salons de cette partie vont être supprimés dans 1 minute.`)
 
         setTimeout(async () => {
