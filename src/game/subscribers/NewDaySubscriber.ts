@@ -1,19 +1,18 @@
-import EventSubscriber from "../dispatcher/EventSubscriber";
+import EventSubscriber, {EventListener} from "../dispatcher/EventSubscriber";
 import {EventsParameters} from "../dispatcher/EventDispatcher";
 import Room from "../Room";
 import {trans} from "../../Translator";
+import {GameState} from "../Game";
 
 export default class NewDaySubscriber implements EventSubscriber {
-    constructor(private room: Room) {
+    constructor(private room: Room, private state: GameState) {
     }
 
     getSubscribedEvents(): [keyof EventsParameters, EventListener<keyof EventsParameters>][] {
         return [['newDay', this.onNewDay]]
     }
 
-    onNewDay(day: number): void {
-        this.room.sendMessage(trans('game.global.newDay', {day}))
+    private onNewDay(): void {
+        this.room.sendMessage(trans('game.newDay', {day: ++this.state.day}))
     }
 }
-
-export type EventListener<K extends keyof EventsParameters> = (...args: EventsParameters[K]) => void

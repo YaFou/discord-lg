@@ -1,10 +1,12 @@
 import {CategoryChannel, Client, Guild, Message, TextChannel, VoiceChannel} from 'discord.js'
-import {FileTranslator} from "./Translator";
+import {FileTranslator, trans} from "./Translator";
 import {JsonEncoder} from "./Encoder";
 import GuildManager from "./discord/GuildManager";
 import DiscordInteractor from "./discord/DiscordInteractor";
 import Command from "./commands/Command";
 import NewGameCommand from "./commands/NewGameCommand";
+import HelpCommand from "./commands/HelpCommand";
+import StartCommand from "./commands/StartCommand";
 
 type Options = {
     client: Client,
@@ -14,14 +16,13 @@ type Options = {
 }
 
 export default class Kernel {
-    private readonly client: Client
+    readonly client: Client
     public readonly translator: FileTranslator
     private readonly token: string
     private readonly guildManagers: Map<Guild, GuildManager> = new Map()
-    private readonly commands: Command[] = [
-        new NewGameCommand(this)
-    ]
+    readonly commands: Command[]
     private readonly commandPrefix: string
+    private helpCommand: Command
 
     constructor(options: Options) {
         this.client = options.client
@@ -29,6 +30,13 @@ export default class Kernel {
         const encoder = new JsonEncoder()
         this.translator = new FileTranslator(options.translationsDirectory + '/fr.json', encoder)
         this.commandPrefix = options.commandPrefix ?? '!lg'
+
+        this.commands = [
+            new NewGameCommand(this),
+            this.helpCommand = new HelpCommand(this),
+            new StartCommand(this)
+        ]
+
         this.registerGuildManagers().then(() => this.client.on('message', this.onMessage.bind(this)))
     }
 
@@ -57,12 +65,18 @@ export default class Kernel {
         return new DiscordInteractor(this, channel)
     }
 
-    private onMessage(message: Message) {
+    private async onMessage(message: Message) {
         if (!message.content.startsWith(this.commandPrefix)) {
             return
         }
 
         const commandParts = message.content.split(' ')
+
+        if (commandParts.length === 1) {
+            this.helpCommand.execute(message)
+
+            return
+        }
 
         for (const command of this.commands) {
             if (command.name === commandParts[1]) {
@@ -71,5 +85,11 @@ export default class Kernel {
                 return
             }
         }
+
+        if (!(message.channel instanceof TextChannel)) {
+            return
+        }
+
+        await this.createInteractor(message.channel).reply(message, trans('commands.unknown', {}))
     }
 }

@@ -24,11 +24,25 @@ export function trans<T extends keyof KeyParameters>(key: T, args: KeyParameters
 
 interface KeyParameters {
     // COMMANDS
+    'commands.unknown': {}
+    'commands.help.title': {}
+    'commands.help.description': {}
+    'commands.newgame.description': {}
     'commands.newgame.success': {textChannel: string, voiceChannelInvite: string}
+    'commands.start.description': {}
+    'commands.start.gameAlreadyStarted': {}
+    'commands.start.gameNotFound': {}
 
     // GAME | GLOBAL
-    'game.global.newDay': { day: number },
     'game.global.roomName': { id: number }
+
+    // GAME | SUBSCRIBERS
+    'game.newDay': { day: number }
+    'game.sunset': {}
+    'game.werewolvesVote.title': {}
+
+    // GAME | INTERACTIONS
+    'game.interactions.poll.selectReaction': {}
 }
 
 export default interface Translator {

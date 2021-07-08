@@ -1,6 +1,18 @@
 {
-    "commands.newgame.success": "Une nouvelle partie a été créé.\n\n**Tu peux rejoindre le salon vocal %voiceChannelInvite% et le salon textuel ici : %textChannel%.**\nInvite tes amis et commence la partie avec la commande `!lg start`.",
+    "commands.unknown": "La commande que tu essayes de chercher n'existe pas. **Pour afficher les commandes disponibles, exécute `!lg help`.",
+    "commands.help.title": "Aide",
+    "commands.help.description": "Affiche les commandes disponibles",
+    "commands.newgame.description": "Créer une nouvelle partie de Loups Garous",
+    "commands.newgame.success": "Une nouvelle partie a été créée.\n\n**Tu peux rejoindre le salon vocal %voiceChannelInvite% et le salon textuel ici : %textChannel%.**\nInvite tes amis et commence la partie avec la commande `!lg start`.",
+    "commands.start.description": "Commence une partie",
+    "commands.start.gameAlreadyStarted": "La partie est déjà commencée.",
+    "commands.start.gameNotFound": "Tu dois te trouver dans le salon d'une partie pour démarrer la partie.",
 
-    "game.global.newDay": "Le soleil se lève, le jour %day% commence.",
-    "game.global.roomName": "Loup Garou #%id%"
+    "game.global.roomName": "Loup Garou #%id%",
+
+    "game.newDay": "Le soleil se lève, le jour %day% commence.",
+    "game.sunset": "Le soleil se couche...",
+    "game.werewolvesVote.title": "Quelle victime voulez-vous dévorez cette nuit ?",
+
+    "game.interactions.poll.selectReaction": "Sélectionne la réaction pour voter"
 }

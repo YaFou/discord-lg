@@ -16,14 +16,14 @@ describe('FileTranslator', () => {
         }
 
         const translator = new FileTranslator('__test', encoder)
-        expect(translator.translate(trans('game.global.newDay', {day: 1}))).toBe('sunrise: day 1')
+        expect(translator.translate(trans('game.newDay', {day: 1}))).toBe('sunrise: day 1')
     })
 
     afterAll(() => unlink('__test', () => {}))
 })
 
 describe('TranslatableString', () => {
-    const string = trans('game.global.newDay', {day: 1})
+    const string = trans('game.newDay', {day: 1})
 
     test('replace no argument', () => {
         expect(string.translate('string')).toBe('string')

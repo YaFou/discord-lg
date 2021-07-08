@@ -3,14 +3,6 @@ import EventSubscriber, {EventListener} from "./EventSubscriber";
 export default class EventDispatcher {
     private listeners: [keyof EventsParameters, EventListener<keyof EventsParameters>[]][] = []
 
-    constructor(...subscribers: EventSubscriber[]) {
-        subscribers.forEach(subscriber => {
-            subscriber.getSubscribedEvents().forEach(event => {
-                this.getListeners(event[0]).push(event[1].bind(subscriber))
-            })
-        })
-    }
-
     private getListeners<K extends keyof EventsParameters>(event: K): EventListener<K>[] {
         const events = this.listeners.filter(currentEvent => currentEvent[0] === event)
 
@@ -24,6 +16,16 @@ export default class EventDispatcher {
         return events[0][1]
     }
 
+    addSubscribers(...subscribers: EventSubscriber[]): this {
+        subscribers.forEach(subscriber => {
+            subscriber.getSubscribedEvents().forEach(event => {
+                this.getListeners(event[0]).push(event[1].bind(subscriber))
+            })
+        })
+
+        return this
+    }
+
     dispatch<K extends keyof EventsParameters>(event: K, ...args: EventsParameters[K]): void {
         const listeners = this.getListeners(event)
 
@@ -34,5 +36,7 @@ export default class EventDispatcher {
 }
 
 export interface EventsParameters {
-    newDay: [number]
+    newDay: []
+    sunset: []
+    werewolvesWakeUp: []
 }

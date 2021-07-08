@@ -1,8 +1,15 @@
 import {Stringable} from "./Translator";
-import {Message} from "discord.js";
+import {Message as DiscordMessage} from "discord.js";
 
 export default interface Interactor {
-    send(message: Stringable): Message | Promise<Message>
+    send(message: Message): DiscordMessage | Promise<DiscordMessage>
 
-    reply(message: Message, answer: Stringable): Message | Promise<Message>
+    reply(message: DiscordMessage, answer: Message): DiscordMessage | Promise<DiscordMessage>
+}
+
+export type Message = Stringable | Block
+
+export class Block {
+    constructor(readonly title: Stringable, readonly fields: [Stringable, Stringable][]) {
+    }
 }
