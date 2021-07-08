@@ -1,5 +1,5 @@
 {
-    "commands.unknown": "La commande que tu essayes de chercher n'existe pas. **Pour afficher les commandes disponibles, exécute `!lg help`.",
+    "commands.unknown": "La commande que tu essayes de chercher n'existe pas. **Pour afficher les commandes disponibles, exécute `!lg help`.**",
     "commands.help.title": "Aide",
     "commands.help.description": "Affiche les commandes disponibles",
     "commands.newgame.description": "Créer une nouvelle partie de Loups Garous",
@@ -7,6 +7,8 @@
     "commands.start.description": "Commence une partie",
     "commands.start.gameAlreadyStarted": "La partie est déjà commencée.",
     "commands.start.gameNotFound": "Tu dois te trouver dans le salon d'une partie pour démarrer la partie.",
+    "commands.clearchannels.description": "Supprime tous les salons de jeux du serveur.",
+    "commands.clearchannels.success": "Tous les salons de jeux ont été supprimés.",
 
     "game.global.roomName": "Loup Garou #%id%",
 

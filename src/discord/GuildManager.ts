@@ -1,13 +1,12 @@
 import {CategoryChannel, Guild, GuildMember, TextChannel, VoiceChannel} from "discord.js";
-import Game, {GameState} from "../game/Game";
+import Game from "../game/Game";
 import Room from "../game/Room";
 import Kernel from "../Kernel";
 import {trans} from "../Translator";
-import EventDispatcher from "../game/dispatcher/EventDispatcher";
-import NewDaySubscriber from "../game/subscribers/NewDaySubscriber";
-import Role, {canBeMany, VILLAGE_CAMP, WEREWOLVES_CAMP} from "../game/Role";
-import {randomElement, removeElement, shuffle} from "../Util";
+import {canBeMany, VILLAGE_CAMP, WEREWOLVES_CAMP} from "../game/Role";
+import {randomElement, removeElement} from "../Util";
 import Player from "../game/Player";
+import {GameEntry, GuildEntry} from "../Store";
 
 export default class GuildManager {
     private games: Game[] = []
@@ -25,7 +24,26 @@ export default class GuildManager {
         const game = new Game(room)
         this.games.push(game)
 
+        const entryId = `${id}.${textChannel.id}.${voiceChannel.id}`;
+        this.kernel.store.create<GameEntry>('game', {
+            room: {
+                textChannel: textChannel.id,
+                voiceChannel: voiceChannel.id,
+                id
+            },
+            id: entryId,
+            guildId: this.guild.id
+        })
+
+        const guildEntry = this.kernel.store.get<GuildEntry>('guild', this.guild.id)
+        guildEntry.games.push(entryId)
+        this.kernel.store.save('guild', guildEntry)
+
         return game
+    }
+
+    pushGame(game: Game) {
+        this.games.push(game)
     }
 
     private findNextRoomId(): number {
@@ -52,7 +70,7 @@ export default class GuildManager {
         return null
     }
 
-    startGame(game: Game, members: GuildMember[]) {
+    async startGame(game: Game, members: GuildMember[]) {
         let villageCamp = [...VILLAGE_CAMP]
         let werewolvesCamp = [...WEREWOLVES_CAMP]
         const villagersTotal = Math.ceil(members.length / 2)
@@ -69,6 +87,23 @@ export default class GuildManager {
         })
 
         game.setPlayers(players)
-        game.start()
+        await game.start()
+    }
+
+    async deleteGame(game: Game) {
+        const {store} = this.kernel
+        const {id: roomId, textChannel, voiceChannel} = game.room
+        const gameId = `${roomId}.${textChannel.id}.${voiceChannel.id}`
+        const gameEntry = store.get<GameEntry>('game', gameId)
+        store.delete('game', gameEntry)
+        await game.room.delete()
+        const entry = store.get<GuildEntry>('guild', this.guild.id)
+        entry.games = removeElement(entry.games, gameId)
+        store.save('guild', entry)
+        this.games = removeElement(this.games, game)
+    }
+
+    getGames(): Game[] {
+        return this.games
     }
 }

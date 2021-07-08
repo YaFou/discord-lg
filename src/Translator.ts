@@ -32,6 +32,8 @@ interface KeyParameters {
     'commands.start.description': {}
     'commands.start.gameAlreadyStarted': {}
     'commands.start.gameNotFound': {}
+    'commands.clearchannels.description': {}
+    'commands.clearchannels.success': {}
 
     // GAME | GLOBAL
     'game.global.roomName': { id: number }

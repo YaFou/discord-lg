@@ -7,12 +7,17 @@ import Command from "./commands/Command";
 import NewGameCommand from "./commands/NewGameCommand";
 import HelpCommand from "./commands/HelpCommand";
 import StartCommand from "./commands/StartCommand";
+import {FileStore, GameEntry, GuildEntry} from "./Store";
+import ClearChannelsCommand from "./commands/ClearChannelsCommand";
+import Game from "./game/Game";
+import Room from "./game/Room";
 
 type Options = {
     client: Client,
     token: string,
     translationsDirectory: string,
-    commandPrefix?: string
+    commandPrefix?: string,
+    dataDirectory: string
 }
 
 export default class Kernel {
@@ -23,6 +28,7 @@ export default class Kernel {
     readonly commands: Command[]
     private readonly commandPrefix: string
     private helpCommand: Command
+    readonly store: FileStore
 
     constructor(options: Options) {
         this.client = options.client
@@ -30,27 +36,56 @@ export default class Kernel {
         const encoder = new JsonEncoder()
         this.translator = new FileTranslator(options.translationsDirectory + '/fr.json', encoder)
         this.commandPrefix = options.commandPrefix ?? '!lg'
+        this.store = new FileStore(options.dataDirectory + '/data.json', encoder)
 
         this.commands = [
-            new NewGameCommand(this),
             this.helpCommand = new HelpCommand(this),
-            new StartCommand(this)
+            new NewGameCommand(this),
+            new StartCommand(this),
+            new ClearChannelsCommand(this)
         ]
 
         this.registerGuildManagers().then(() => this.client.on('message', this.onMessage.bind(this)))
     }
 
     private async registerGuildManagers() {
-        // TODO
-        const guild = await this.client.guilds.fetch(process.env.GUILD_ID)
-        const categoryChannel = await this.client.channels.fetch(process.env.CATEGORY_CHANNEL_ID)
-        const fallbackChannel = await this.client.channels.fetch(process.env.FALLBACK_CHANNEL_ID)
+        const games = this.store.getAll<GameEntry>('game')
 
-        if (!(categoryChannel instanceof CategoryChannel) || !(fallbackChannel instanceof VoiceChannel)) {
-            return
-        }
+        this.store.getAll<GuildEntry>('guild').map(async entry => {
+            const guild = await this.client.guilds.fetch(entry.id)
+            const categoryChannel = await this.client.channels.fetch(entry.categoryChannelId)
+            const fallbackChannel = await this.client.channels.fetch(entry.fallbackChannelId)
 
-        this.guildManagers.set(guild, new GuildManager(this, guild, categoryChannel, fallbackChannel))
+            if (!(categoryChannel instanceof CategoryChannel) || !(fallbackChannel instanceof VoiceChannel)) {
+                return
+            }
+
+            const guildManager = new GuildManager(
+                this,
+                guild,
+                categoryChannel,
+                fallbackChannel
+            )
+
+            const filteredGames = games.filter(game => game.guildId === guild.id)
+            for (const {room} of filteredGames) {
+                const textChannel = await this.client.channels.fetch(room.textChannel)
+                const voiceChannel = await this.client.channels.fetch(room.voiceChannel)
+
+                if (!(textChannel instanceof TextChannel) || !(voiceChannel instanceof VoiceChannel)) {
+                    continue
+                }
+
+                guildManager.pushGame(new Game(new Room(
+                    this,
+                    room.id,
+                    textChannel,
+                    voiceChannel
+                )))
+            }
+
+            this.guildManagers.set(guild, guildManager)
+        })
     }
 
     async login() {
@@ -80,7 +115,7 @@ export default class Kernel {
 
         for (const command of this.commands) {
             if (command.name === commandParts[1]) {
-                command.execute(message)
+                await command.execute(message)
 
                 return
             }

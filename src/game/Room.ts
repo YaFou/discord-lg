@@ -1,11 +1,4 @@
-import {
-    OverwriteResolvable,
-    TextChannel,
-    VoiceChannel,
-    Message as DiscordMessage,
-    MessageReaction,
-    User
-} from "discord.js";
+import {MessageReaction, OverwriteResolvable, TextChannel, User, VoiceChannel} from "discord.js";
 import Interactor, {Message} from "../Interactor";
 import Kernel from "../Kernel";
 import Role from "./Role";
@@ -72,5 +65,10 @@ export default class Room {
                 resolve(poll.decide())
             }, poll.time * 1000)
         })
+    }
+
+    async delete() {
+        await this.textChannel.delete()
+        await this.voiceChannel.delete()
     }
 }

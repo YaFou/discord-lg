@@ -7,7 +7,8 @@ dotenv.config()
 const kernel = new Kernel({
     client: new Client(),
     token: process.env.BOT_TOKEN,
-    translationsDirectory: 'assets/translations'
+    translationsDirectory: 'assets/translations',
+    dataDirectory: 'data'
 })
 
 kernel.login()
