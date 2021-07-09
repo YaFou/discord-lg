@@ -33,10 +33,10 @@ export default class NextTurnSubscriber implements EventSubscriber {
 
                 if (currentTurn === null || currentTurn === GameTurn.VILLAGE_VOTE) {
                     await this.dispatcher.dispatch('sunset')
-                    await this.room.lockToRole(Roles.clairvoyant)
-                    this.state.turn = GameTurn.CLAIRVOYANT
-                    await this.dispatcher.dispatch('clairvoyantWakeUp')
-                } else if (currentTurn === GameTurn.CLAIRVOYANT) {
+                    await this.room.lockToRole(Roles.oracle)
+                    this.state.turn = GameTurn.ORACLE
+                    await this.dispatcher.dispatch('oracleWakeUp')
+                } else if (currentTurn === GameTurn.ORACLE) {
                     await this.room.lockToRole(...getRolesByCamp(Camps.WEREWOLVES))
                     this.state.turn = GameTurn.WEREWOLVES_VOTE
                     await this.dispatcher.dispatch('werewolvesWakeUp')

@@ -3,11 +3,11 @@ import {readFileSync} from "fs";
 
 interface KeyParameters {
     // COMMANDS
-    'commands.unknown': {}
+    'commands.unknown': {prefix: Stringable}
     'commands.help.title': {}
     'commands.help.description': {}
     'commands.help.usage': {prefix: Stringable}
-    'commands.newgame.description': {}
+    'commands.newgame.description': {prefix: Stringable}
     'commands.newgame.success': {textChannel: Stringable, voiceChannelInvite: Stringable}
     'commands.start.description': {}
     'commands.start.gameAlreadyStarted': {}
@@ -35,9 +35,9 @@ interface KeyParameters {
     'game.villageVote.introduction': {}
     'game.villageVote.title': {}
     'game.villageVote.death': {player: Stringable, role: Stringable}
-    'game.clairvoyant.title': {},
-    'game.clairvoyant.exposeRole': {player: Stringable, role: Stringable}
-    'game.clairvoyant.noExposed': {}
+    'game.oracle.title': {},
+    'game.oracle.exposeRole': {player: Stringable, role: Stringable}
+    'game.oracle.noExposed': {}
 
     // GAME | INTERACTIONS
     'game.interactions.poll.selectReaction': {}
@@ -53,8 +53,8 @@ interface KeyParameters {
     'game.role.werewolf.description': {}
     'game.role.littleGirl': {}
     'game.role.littleGirl.description': {}
-    'game.role.clairvoyant': {}
-    'game.role.clairvoyant.description': {}
+    'game.role.oracle': {}
+    'game.role.oracle.description': {}
 
     // GAME | CAMPS
     'game.camp.village': {}

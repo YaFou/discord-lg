@@ -135,6 +135,6 @@ export default class Kernel {
             }
         }
 
-        await interactor.reply(message, trans('commands.unknown', {}))
+        await interactor.reply(message, trans('commands.unknown', {prefix: this.commandPrefix}))
     }
 }

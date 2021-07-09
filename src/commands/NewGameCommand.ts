@@ -4,8 +4,11 @@ import Kernel from "../Kernel";
 import {trans} from "../Translator";
 
 export default class NewGameCommand extends Command {
-    constructor(private kernel: Kernel) {
-        super('newgame', trans('commands.newgame.description', {}));
+    private kernel: Kernel;
+
+    constructor(kernel: Kernel) {
+        super('newgame', trans('commands.newgame.description', {prefix: kernel.commandPrefix}));
+        this.kernel = kernel
     }
 
     async execute(message: Message): Promise<void> {

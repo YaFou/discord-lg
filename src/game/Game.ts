@@ -120,5 +120,5 @@ export enum GameStatus {
 export enum GameTurn {
     WEREWOLVES_VOTE,
     VILLAGE_VOTE,
-    CLAIRVOYANT,
+    ORACLE,
 }

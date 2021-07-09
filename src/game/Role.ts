@@ -39,9 +39,9 @@ export const Roles = {
         camp: Camps.VILLAGE,
         canBeMany: false
     },
-    clairvoyant: {
-        name: trans('game.role.clairvoyant', {}),
-        description: trans('game.role.clairvoyant.description', {}),
+    oracle: {
+        name: trans('game.role.oracle', {}),
+        description: trans('game.role.oracle.description', {}),
         camp: Camps.VILLAGE,
         canBeMany: false
     }
