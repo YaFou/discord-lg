@@ -7,14 +7,37 @@
     "commands.start.description": "Commence une partie",
     "commands.start.gameAlreadyStarted": "La partie est déjà commencée.",
     "commands.start.gameNotFound": "Tu dois te trouver dans le salon d'une partie pour démarrer la partie.",
+    "commands.start.minPlayersRequirement": "Une partie ne peut commencer seulement avec minimum %minPlayers% joueurs.",
+    "commands.start.maxPlayersRequirement": "Une partie ne peut commencer seulement avec maximum %maxPlayers% joueurs.",
     "commands.clearchannels.description": "Supprime tous les salons de jeux du serveur.",
     "commands.clearchannels.success": "Tous les salons de jeux ont été supprimés.",
 
     "game.global.roomName": "Loup Garou #%id%",
+    "game.global.win": "La partie est terminée ! Le camp victorieux est le camp **%camp%**.",
+    "game.global.channelsDestroy": "Les salons de cette partie vont se supprimer dans %seconds% secondes.",
 
     "game.newDay": "Le soleil se lève, le jour %day% commence.",
     "game.sunset": "Le soleil se couche...",
     "game.werewolvesVote.title": "Quelle victime voulez-vous dévorez cette nuit ?",
+    "game.werewolvesVote.success": "Vous avez choisi de dévorer %player%.",
+    "game.playerDead": "Cette nuit, %player% est mort. Il était **%role%**.",
+    "game.villageVote.introduction": "Des suspicions circulent à travers le village : certains villageois se réveillent pendant la nuit... Vous décidez que quelqu'un meurt sur la place publique !",
+    "game.villageVote.title": "Qui est le traître ?",
+    "game.villageVote.death": "Vous avez décidé de tuer %player%. Il était **%role%**.",
 
-    "game.interactions.poll.selectReaction": "Sélectionne la réaction pour voter"
+    "game.interactions.poll.selectReaction": "Sélectionne la réaction pour voter",
+
+    "game.role.mp": "Tu es **%role%**",
+    "game.role.mp.werewolves": "Tes compères loups garous sont %werewolves%.",
+    "game.role.mp.werewolves.empty": "Vous n'avez pas de compères loups garous.",
+    "game.role.villager": "Simple villageois",
+    "game.role.villager.description": "Le simple villageois doit déduire les loups garous et les éliminer.",
+    "game.role.werewolf": "Loup garou",
+    "game.role.werewolf.description": "Le loup garou, à l'aide de ses compères, doit éliminer tous les autres villageois.",
+
+    "game.camp.village": "Village",
+    "game.camp.werewolves": "Loups garous",
+
+    "comma": ", ",
+    "and": " et "
 }

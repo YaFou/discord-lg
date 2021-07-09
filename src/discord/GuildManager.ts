@@ -3,10 +3,11 @@ import Game from "../game/Game";
 import Room from "../game/Room";
 import Kernel from "../Kernel";
 import {trans} from "../Translator";
-import {canBeMany, VILLAGE_CAMP, WEREWOLVES_CAMP} from "../game/Role";
-import {randomElement, removeElement} from "../Util";
+import {randomElement, removeElement, shuffle} from "../Util";
 import Player from "../game/Player";
-import {GameEntry, GuildEntry} from "../Store";
+import {GameEntry, GuildEntry} from "../Store"
+import {Camps, getRolesByCamp} from "../game/Role";
+import {GAME_DESTROY_TIME} from "../Settings";
 
 export default class GuildManager {
     private games: Game[] = []
@@ -71,23 +72,30 @@ export default class GuildManager {
     }
 
     async startGame(game: Game, members: GuildMember[]) {
-        let villageCamp = [...VILLAGE_CAMP]
-        let werewolvesCamp = [...WEREWOLVES_CAMP]
+        let villageCamp = [...getRolesByCamp(Camps.VILLAGE)]
+        let werewolvesCamp = [...getRolesByCamp(Camps.WEREWOLVES)]
         const villagersTotal = Math.ceil(members.length / 2)
         let villagersCount = 0
 
-        const players = members.map(member => {
-            let role = villagersCount === villagersTotal ? randomElement(werewolvesCamp) : randomElement(villageCamp);
+        const players = shuffle(members).map(member => {
+            let role = villagersCount >= villagersTotal ? randomElement(werewolvesCamp) : randomElement(villageCamp);
 
-            if (!canBeMany(role)) {
+            if (!role.canBeMany) {
                 removeElement(villageCamp.includes(role) ? villageCamp : werewolvesCamp, role)
             }
+
+            villagersCount++
 
             return new Player(member, role)
         })
 
         game.setPlayers(players)
         await game.start()
+        await game.room.sendMessage(trans('game.global.channelsDestroy', {seconds: GAME_DESTROY_TIME}))
+
+        setTimeout(async () => {
+            await this.deleteGame(game)
+        }, GAME_DESTROY_TIME * 1000)
     }
 
     async deleteGame(game: Game) {
@@ -96,6 +104,12 @@ export default class GuildManager {
         const gameId = `${roomId}.${textChannel.id}.${voiceChannel.id}`
         const gameEntry = store.get<GameEntry>('game', gameId)
         store.delete('game', gameEntry)
+        const members = game.room.voiceChannel.members.array()
+
+        for (const member of members) {
+            await member.voice.setChannel(this.fallbackChannel)
+        }
+
         await game.room.delete()
         const entry = store.get<GuildEntry>('guild', this.guild.id)
         entry.games = removeElement(entry.games, gameId)

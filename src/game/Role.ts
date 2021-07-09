@@ -1,13 +1,42 @@
-enum Role {
-    VILLAGER,
-    WEREWOLF
+import {Stringable, trans} from "../Translator";
+
+export type Role = {
+    name: Stringable
+    description: Stringable
+    camp: Camp
+    canBeMany: Boolean
 }
 
-export const VILLAGE_CAMP = [Role.VILLAGER]
-export const WEREWOLVES_CAMP = [Role.WEREWOLF]
-
-export function canBeMany(role: Role) {
-    return true
+type Camp = {
+    name: Stringable
 }
 
-export default Role
+export const Camps = {
+    VILLAGE: {
+        name: trans('game.camp.village', {})
+    },
+    WEREWOLVES: {
+        name: trans('game.camp.werewolves', {})
+    }
+}
+
+const _Roles = {
+    villager: {
+        name: trans('game.role.villager', {}),
+        description: trans('game.role.villager.description', {}),
+        camp: Camps.VILLAGE,
+        canBeMany: true
+    },
+    werewolf: {
+        name: trans('game.role.werewolf', {}),
+        description: trans('game.role.werewolf.description', {}),
+        camp: Camps.WEREWOLVES,
+        canBeMany: true
+    }
+}
+
+export const Roles: Role[] = Object.values(_Roles)
+
+export function getRolesByCamp(camp: Camp) {
+    return Roles.filter(role => role.camp === camp)
+}

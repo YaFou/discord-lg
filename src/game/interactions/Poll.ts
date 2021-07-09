@@ -1,6 +1,6 @@
 import {Stringable, trans} from "../../Translator";
 import {Block} from "../../Interactor";
-import {Message, MessageReaction, User} from "discord.js";
+import {MessageReaction, User} from "discord.js";
 import {randomElement} from "../../Util";
 
 const EMOJIS = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫', '⚪']
@@ -9,6 +9,7 @@ export default class Poll<T> {
     private label: (T) => Stringable
     private reactionsMap: Map<T, string> = new Map<T, string>()
     private choices: Map<User, MessageReaction> = new Map<User, MessageReaction>()
+    private randomOnNoVotes = false
 
     constructor(private title: Stringable, private elements: T[], readonly time: number) {
         this.label = element => element
@@ -20,12 +21,19 @@ export default class Poll<T> {
         return this
     }
 
+    setRandomOnNoVotes(): this {
+        this.randomOnNoVotes = true
+
+        return this
+    }
+
     generateBlock(): Block {
         let emojiIndex = 0
 
         const fields: [Stringable, Stringable][] = this.elements.map(element => {
             const emoji = EMOJIS[emojiIndex]
             this.reactionsMap.set(element, emoji)
+            emojiIndex++
 
             return [`${emoji} ${this.label(element)}`, trans('game.interactions.poll.selectReaction', {})]
         })
@@ -46,6 +54,10 @@ export default class Poll<T> {
     }
 
     decide(): T {
+        if (this.choices.size === 0) {
+            return this.randomOnNoVotes ? randomElement(this.elements) : null
+        }
+
         let votes = [...this.choices.values()].sort((a, b) => b.count - a.count)
         votes = votes.filter(vote => vote.count = votes[0].count)
         const randomVote = randomElement(votes)

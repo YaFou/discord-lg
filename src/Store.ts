@@ -41,6 +41,7 @@ export default interface Store {
 
 export class FileStore implements Store {
     private readonly data: object
+    private isWriting = false
 
     constructor(private file: string, private encoder: Encoder) {
         this.data = encoder.decode(readFileSync(file).toString())
@@ -48,7 +49,6 @@ export class FileStore implements Store {
 
     create<T extends Entry>(type: EntryType, entry: T): void {
         this.getAllEntries(type)[entry.id] = entry
-        this.write()
     }
 
     getAll<T extends Entry>(type: EntryType): T[]
@@ -57,7 +57,10 @@ export class FileStore implements Store {
     }
 
     private write(): void {
-        writeFile(this.file, this.encoder.encode(this.data), () => {})
+        if (!this.isWriting) {
+            this.isWriting = false
+            writeFile(this.file, this.encoder.encode(this.data), () => this.isWriting = false)
+        }
     }
 
     get<T extends Entry>(type: EntryType, id: Id): T {

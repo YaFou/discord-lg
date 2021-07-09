@@ -1,4 +1,5 @@
 import EventSubscriber, {EventListener} from "./EventSubscriber";
+import Player from "../Player";
 
 export default class EventDispatcher {
     private listeners: [keyof EventsParameters, EventListener<keyof EventsParameters>[]][] = []
@@ -26,12 +27,12 @@ export default class EventDispatcher {
         return this
     }
 
-    dispatch<K extends keyof EventsParameters>(event: K, ...args: EventsParameters[K]): void {
+    async dispatch<K extends keyof EventsParameters>(event: K, ...args: EventsParameters[K]) {
         const listeners = this.getListeners(event)
 
-        listeners.forEach(listener => {
-            listener(...args)
-        })
+        for (const listener of listeners) {
+            await listener(...args)
+        }
     }
 }
 
@@ -39,4 +40,8 @@ export interface EventsParameters {
     newDay: []
     sunset: []
     werewolvesWakeUp: []
+    playerDead: [Player]
+    nextTurn: []
+    villageVote: []
+    start: []
 }

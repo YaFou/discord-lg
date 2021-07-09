@@ -1,17 +1,87 @@
 import Encoder from "./Encoder";
 import {readFileSync} from "fs";
 
+interface KeyParameters {
+    // COMMANDS
+    'commands.unknown': {}
+    'commands.help.title': {}
+    'commands.help.description': {}
+    'commands.newgame.description': {}
+    'commands.newgame.success': {textChannel: Stringable, voiceChannelInvite: Stringable}
+    'commands.start.description': {}
+    'commands.start.gameAlreadyStarted': {}
+    'commands.start.gameNotFound': {}
+    'commands.start.minPlayersRequirement': {minPlayers: number}
+    'commands.start.maxPlayersRequirement': {maxPlayers: number}
+    'commands.clearchannels.description': {}
+    'commands.clearchannels.success': {}
+
+    // GAME | GLOBAL
+    'game.global.roomName': { id: number }
+    'game.global.win': {camp: Stringable}
+    'game.global.channelsDestroy': {seconds: number}
+
+    // GAME | SUBSCRIBERS
+    'game.newDay': { day: number }
+    'game.sunset': {}
+    'game.werewolvesVote.title': {}
+    'game.werewolvesVote.success': {player: Stringable}
+    'game.playerDead': {player: Stringable, role: Stringable}
+    'game.villageVote.introduction': {}
+    'game.villageVote.title': {}
+    'game.villageVote.death': {player: Stringable, role: Stringable}
+
+    // GAME | INTERACTIONS
+    'game.interactions.poll.selectReaction': {}
+
+    // GAME | ROLES
+    'game.role.mp': {role: Stringable}
+    'game.role.mp.werewolves': {werewolves: Stringable[]}
+    'game.role.mp.werewolves.empty': {}
+    'game.role.villager': {}
+    'game.role.villager.description': {}
+    'game.role.werewolf': {}
+    'game.role.werewolf.description': {}
+
+    // GAME | CAMPS
+    'game.camp.village': {}
+    'game.camp.werewolves': {}
+
+    // OTHERS
+    'comma': {}
+    'and': {}
+}
+
 export type Stringable = string | TranslatableString<any>
 
 export class TranslatableString<T extends keyof KeyParameters> {
     constructor(readonly key: T, private args: KeyParameters[T]) {
     }
 
-    translate(message: string): string {
+    translate(message: string, translator: Translator): string {
         let newString = message
 
         for (const key of Object.keys(this.args)) {
-            newString = newString.replace(new RegExp(`%${key}%`, 'g'), this.args[key])
+            let value = this.args[key]
+
+            if (value instanceof TranslatableString) {
+                value = translator.translate(value)
+            }
+
+            if (Array.isArray(value)) {
+                const elements = value.map(element => element instanceof TranslatableString ? translator.translate(element) : element)
+                const lastElement = elements.pop()
+
+                if (elements.length == 0) {
+                    value = lastElement
+                }
+
+                const comma = translator.translate(trans('comma', {}))
+                const and = translator.translate(trans('and', {}))
+                value = elements.join(comma) + and + lastElement
+            }
+
+            newString = newString.replace(new RegExp(`%${key}%`, 'g'), value)
         }
 
         return newString
@@ -22,38 +92,13 @@ export function trans<T extends keyof KeyParameters>(key: T, args: KeyParameters
     return new TranslatableString<T>(key, args)
 }
 
-interface KeyParameters {
-    // COMMANDS
-    'commands.unknown': {}
-    'commands.help.title': {}
-    'commands.help.description': {}
-    'commands.newgame.description': {}
-    'commands.newgame.success': {textChannel: string, voiceChannelInvite: string}
-    'commands.start.description': {}
-    'commands.start.gameAlreadyStarted': {}
-    'commands.start.gameNotFound': {}
-    'commands.clearchannels.description': {}
-    'commands.clearchannels.success': {}
-
-    // GAME | GLOBAL
-    'game.global.roomName': { id: number }
-
-    // GAME | SUBSCRIBERS
-    'game.newDay': { day: number }
-    'game.sunset': {}
-    'game.werewolvesVote.title': {}
-
-    // GAME | INTERACTIONS
-    'game.interactions.poll.selectReaction': {}
-}
-
 export default interface Translator {
     translate<K extends keyof KeyParameters>(message: TranslatableString<K>): string
 }
 
 export abstract class AbstractTranslator implements Translator {
     translate<K extends keyof KeyParameters>(message: TranslatableString<K>): string {
-        return message.translate(this.getMessage(message.key))
+        return message.translate(this.getMessage(message.key), this)
     }
 
     protected abstract getMessage<K extends keyof KeyParameters>(key: K): string

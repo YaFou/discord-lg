@@ -32,6 +32,20 @@ export default class StartCommand extends Command {
             return
         }
 
-        guildManager.startGame(game, game.room.voiceChannel.members.array())
+        const members = game.room.voiceChannel.members.array();
+
+        if (members.length < 2) {
+            await interactor.reply(message, trans('commands.start.minPlayersRequirement', {minPlayers: 2}))
+
+            return
+        }
+
+        if (members.length > 20) {
+            await interactor.reply(message, trans('commands.start.maxPlayersRequirement', {maxPlayers: 20}))
+
+            return
+        }
+
+        await guildManager.startGame(game, members)
     }
 }
