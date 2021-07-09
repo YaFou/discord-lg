@@ -4,6 +4,9 @@ import Player from "../Player";
 import Room from "../Room";
 import {trans} from "../../Translator";
 import Game from "../Game";
+import {Roles} from "../Role";
+import PlayerChoice from "../interactions/PlayerChoice";
+import {HUNTER_CHOICE_TIME} from "../../Settings";
 
 export default class PlayerDeadSubscriber implements EventSubscriber {
     getSubscribedEvents(): [keyof EventsParameters, EventListener<keyof EventsParameters>][] {
@@ -19,6 +22,16 @@ export default class PlayerDeadSubscriber implements EventSubscriber {
         }))
 
         this.game.removePlayer(player)
+
+        if (player.role === Roles.hunter) {
+            const choice = new PlayerChoice(trans('game.hunter.introduction', {}), this.game.getPlayers(), HUNTER_CHOICE_TIME)
+                .setRandomOnNoChoice()
+                .setPossibleInteractors([player.user])
+
+            const shotPlayer = await this.room.sendChoice(choice)
+            this.game.removePlayer(shotPlayer)
+            await this.room.sendMessage(trans('game.hunter.dead', {player: shotPlayer.user.toString(), role: shotPlayer.role.name}))
+        }
     }
 
     constructor(private room: Room, private game: Game) {

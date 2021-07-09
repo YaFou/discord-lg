@@ -1,11 +1,13 @@
 import {Stringable} from "../../Translator";
 import {Block} from "../../Interactor";
+import {GuildMember} from "discord.js";
 
 const EMOJIS = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫', '⚪']
 
 export default abstract class ReactionsInteraction<T> {
     private label: (T) => Stringable
     private reactionsMap: Map<T, string> = new Map<T, string>()
+    private possibleInteractors: GuildMember[] = null
 
     constructor(private title: Stringable, protected elements: T[], readonly time: number) {
         this.label = element => element
@@ -35,5 +37,15 @@ export default abstract class ReactionsInteraction<T> {
 
     getReactionsMap(): Map<T, string> {
         return this.reactionsMap
+    }
+
+    setPossibleInteractors(possibleInteractors: GuildMember[]): this {
+        this.possibleInteractors = possibleInteractors
+
+        return this
+    }
+
+    getPossibleInteractors(): GuildMember[] {
+        return this.possibleInteractors
     }
 }

@@ -47,6 +47,10 @@
     "game.role.littleGirl.description": "En se faufilant à travers les murs, la petite fille peut espionner les conversations des loups garous. Elle doit gagner avec le village.",
     "game.role.oracle": "Voyante",
     "game.role.oracle.description": "La voyante doit gagner avec le village. Cependant, chaque nuit, elle peut découvrir le rôle d'un villageois à travers sa boule de cristal.",
+    "game.role.hunter": "Chasseur",
+    "game.role.hunter.description": "Le chasseur doit gagner avec le village. A sa mort, il tirera un dernier coup de feu sur un villageois.",
+    "game.hunter.introduction": "Sur qui veux-tu tirer ton dernier coup de feu ?",
+    "game.hunter.dead": "Avant sa mort, le chasseur réussi à tirer un dernier coup de feu sur %player%. Il était **%role%**.",
 
     "game.camp.village": "Village",
     "game.camp.werewolves": "Loups garous",

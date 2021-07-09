@@ -38,6 +38,8 @@ interface KeyParameters {
     'game.oracle.title': {},
     'game.oracle.exposeRole': {player: Stringable, role: Stringable}
     'game.oracle.noExposed': {}
+    'game.hunter.introduction': {}
+    'game.hunter.dead': {player: Stringable, role: Stringable}
 
     // GAME | INTERACTIONS
     'game.interactions.poll.selectReaction': {}
@@ -55,6 +57,8 @@ interface KeyParameters {
     'game.role.littleGirl.description': {}
     'game.role.oracle': {}
     'game.role.oracle.description': {}
+    'game.role.hunter': {}
+    'game.role.hunter.description': {}
 
     // GAME | CAMPS
     'game.camp.village': {}

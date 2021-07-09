@@ -47,6 +47,10 @@
     "game.role.littleGirl.description": "By weaving in and out through the walls, the little girl can tracks werewolves conversations. She must win with the village.",
     "game.role.oracle": "Oracle",
     "game.role.oracle.description": "The oracle must win with the village. However, each night, she can discover the role of one villager through her crystal ball.",
+    "game.role.hunter": "Hunter",
+    "game.role.hunter.description": "The hunter must win with the village. At his death, he will shoot a last shot on a villager.",
+    "game.hunter.introduction": "On who do you want to shoot your last shot?",
+    "game.hunter.dead": "Before his death, the hunter shot a last shot on %player%. He was **%role%**.",
 
     "game.camp.village": "Village",
     "game.camp.werewolves": "Werewolves",

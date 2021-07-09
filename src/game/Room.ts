@@ -60,7 +60,12 @@ export default class Room {
             return
         }
 
-        if (this.game.getSpectators().includes(member) || ![...reactionsInteraction.getReactionsMap().values()].includes(reaction.emoji.toString())) {
+        if (
+            this.game.getSpectators().includes(member) ||
+            ![...reactionsInteraction.getReactionsMap().values()].includes(reaction.emoji.toString()) ||
+            reactionsInteraction.getPossibleInteractors() === null ||
+            !reactionsInteraction.getPossibleInteractors().includes(member)
+        ) {
             await reaction.users.remove(user)
         }
 
@@ -86,7 +91,7 @@ export default class Room {
 
             setTimeout(() => {
                 this.kernel.client.removeListener('messageReactionAdd', onReact)
-                resolve(null)
+                resolve(choice.decide())
             }, choice.time * 1000)
         })
     }

@@ -44,6 +44,12 @@ export const Roles = {
         description: trans('game.role.oracle.description', {}),
         camp: Camps.VILLAGE,
         canBeMany: false
+    },
+    hunter: {
+        name: trans('game.role.hunter', {}),
+        description: trans('game.role.hunter.description', {}),
+        camp: Camps.VILLAGE,
+        canBeMany: false
     }
 }
 
