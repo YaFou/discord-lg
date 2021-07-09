@@ -1,48 +1,16 @@
-import {Stringable, trans} from "../../Translator";
-import {Block} from "../../Interactor";
 import {MessageReaction, User} from "discord.js";
 import {randomElement} from "../../Util";
+import ReactionsInteraction from "./ReactionsInteraction";
+import {Stringable, trans} from "../../Translator";
 
-const EMOJIS = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫', '⚪']
-
-export default class Poll<T> {
-    private label: (T) => Stringable
-    private reactionsMap: Map<T, string> = new Map<T, string>()
+export default class Poll<T> extends ReactionsInteraction<T> {
     private choices: Map<User, MessageReaction> = new Map<User, MessageReaction>()
     private randomOnNoVotes = false
-
-    constructor(private title: Stringable, private elements: T[], readonly time: number) {
-        this.label = element => element
-    }
-
-    setLabel(label: (T) => Stringable): this {
-        this.label = label
-
-        return this
-    }
 
     setRandomOnNoVotes(): this {
         this.randomOnNoVotes = true
 
         return this
-    }
-
-    generateBlock(): Block {
-        let emojiIndex = 0
-
-        const fields: [Stringable, Stringable][] = this.elements.map(element => {
-            const emoji = EMOJIS[emojiIndex]
-            this.reactionsMap.set(element, emoji)
-            emojiIndex++
-
-            return [`${emoji} ${this.label(element)}`, trans('game.interactions.poll.selectReaction', {})]
-        })
-
-        return new Block(this.title, fields)
-    }
-
-    getReactionsMap(): Map<T, string> {
-        return this.reactionsMap
     }
 
     async onReact(reaction: MessageReaction, user: User) {
@@ -61,8 +29,12 @@ export default class Poll<T> {
         let votes = [...this.choices.values()].sort((a, b) => b.count - a.count)
         votes = votes.filter(vote => vote.count = votes[0].count)
         const randomVote = randomElement(votes)
-        const reactions = [...this.reactionsMap]
+        const reactions = [...this.getReactionsMap()]
 
         return reactions.filter(([_, emoji]) => emoji === randomVote.emoji.toString())[0][0]
+    }
+
+    protected getHelp(): Stringable {
+        return trans('game.interactions.poll.selectReaction', {})
     }
 }

@@ -98,6 +98,10 @@ export default class Game {
     hasRole(role: Role) {
         return this.getPlayersByRole(role).length > 0
     }
+
+    getPlayersByNotRole(...roles: Role[]): Player[] {
+        return this.players.filter(player => !roles.includes(player.role))
+    }
 }
 
 export type GameState = {
@@ -115,5 +119,6 @@ export enum GameStatus {
 
 export enum GameTurn {
     WEREWOLVES_VOTE,
-    VILLAGE_VOTE
+    VILLAGE_VOTE,
+    CLAIRVOYANT,
 }

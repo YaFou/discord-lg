@@ -3,7 +3,7 @@ import {trans} from "../Translator";
 import {Message, TextChannel} from "discord.js";
 import Kernel from "../Kernel";
 import {Block} from "../Interactor";
-import {Roles} from "../game/Role";
+import {RolesArray} from "../game/Role";
 
 export default class RolesCommand extends Command {
     async execute(message: Message) {
@@ -12,7 +12,7 @@ export default class RolesCommand extends Command {
         }
 
         const interactor = this.kernel.createInteractor(message.channel)
-        const block = new Block(trans('commands.roles.title', {}), Roles.map(role => {
+        const block = new Block(trans('commands.roles.title', {}), RolesArray.map(role => {
             return [role.name, role.description]
         }))
         await interactor.reply(message, block)

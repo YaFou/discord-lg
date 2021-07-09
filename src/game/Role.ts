@@ -20,7 +20,7 @@ export const Camps = {
     }
 }
 
-export const _Roles = {
+export const Roles = {
     villager: {
         name: trans('game.role.villager', {}),
         description: trans('game.role.villager.description', {}),
@@ -38,11 +38,17 @@ export const _Roles = {
         description: trans('game.role.littleGirl.description', {}),
         camp: Camps.VILLAGE,
         canBeMany: false
+    },
+    clairvoyant: {
+        name: trans('game.role.clairvoyant', {}),
+        description: trans('game.role.clairvoyant.description', {}),
+        camp: Camps.VILLAGE,
+        canBeMany: false
     }
 }
 
-export const Roles: Role[] = Object.values(_Roles)
+export const RolesArray: Role[] = Object.values(Roles)
 
 export function getRolesByCamp(camp: Camp) {
-    return Roles.filter(role => role.camp === camp)
+    return RolesArray.filter(role => role.camp === camp)
 }

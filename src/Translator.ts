@@ -6,6 +6,7 @@ interface KeyParameters {
     'commands.unknown': {}
     'commands.help.title': {}
     'commands.help.description': {}
+    'commands.help.usage': {prefix: Stringable}
     'commands.newgame.description': {}
     'commands.newgame.success': {textChannel: Stringable, voiceChannelInvite: Stringable}
     'commands.start.description': {}
@@ -17,6 +18,7 @@ interface KeyParameters {
     'commands.clearchannels.success': {}
     'commands.roles.description': {}
     'commands.roles.title': {}
+    'commands.forbidden': {}
 
     // GAME | GLOBAL
     'game.global.roomName': { id: number }
@@ -33,9 +35,13 @@ interface KeyParameters {
     'game.villageVote.introduction': {}
     'game.villageVote.title': {}
     'game.villageVote.death': {player: Stringable, role: Stringable}
+    'game.clairvoyant.title': {},
+    'game.clairvoyant.exposeRole': {player: Stringable, role: Stringable}
+    'game.clairvoyant.noExposed': {}
 
     // GAME | INTERACTIONS
     'game.interactions.poll.selectReaction': {}
+    'game.interactions.choice.selectReaction': {}
 
     // GAME | ROLES
     'game.role.mp': {role: Stringable}
@@ -47,6 +53,8 @@ interface KeyParameters {
     'game.role.werewolf.description': {}
     'game.role.littleGirl': {}
     'game.role.littleGirl.description': {}
+    'game.role.clairvoyant': {}
+    'game.role.clairvoyant.description': {}
 
     // GAME | CAMPS
     'game.camp.village': {}

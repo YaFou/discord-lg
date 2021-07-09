@@ -1,12 +1,12 @@
 import EventSubscriber, {EventListener} from "../dispatcher/EventSubscriber";
 import EventDispatcher, {EventsParameters} from "../dispatcher/EventDispatcher";
 import Room from "../Room";
-import Poll from "../interactions/Poll";
 import {trans} from "../../Translator";
 import Game, {GameState} from "../Game";
 import {WEREWOLVES_VOTE_TIME} from "../../Settings";
 import {Camps, getRolesByCamp} from "../Role";
 import {removeElement} from "../../Util";
+import PlayerPoll from "../interactions/PlayerPoll";
 
 export default class WerewolvesSubscriber implements EventSubscriber {
     constructor(private dispatcher: EventDispatcher, private room: Room, private game: Game, private state: GameState) {
@@ -20,8 +20,7 @@ export default class WerewolvesSubscriber implements EventSubscriber {
     }
 
     private async onWerewolvesWakeUp() {
-        const poll = new Poll(trans('game.werewolvesVote.title', {}), this.game.getPlayers(), WEREWOLVES_VOTE_TIME)
-            .setLabel(player => player.user.displayName)
+        const poll = new PlayerPoll(trans('game.werewolvesVote.title', {}), this.game.getPlayers(), WEREWOLVES_VOTE_TIME)
             .setRandomOnNoVotes()
 
         const player = await this.room.sendPoll(poll)

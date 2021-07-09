@@ -1,4 +1,4 @@
-import {Message} from "discord.js";
+import {GuildMember, Message} from "discord.js";
 import {Stringable} from "../Translator";
 
 export default abstract class Command {
@@ -6,4 +6,8 @@ export default abstract class Command {
     }
 
     abstract execute(message: Message): void
+
+    hasPermission(member: GuildMember): Boolean {
+        return true
+    }
 }

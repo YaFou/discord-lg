@@ -1,10 +1,12 @@
-import {MessageReaction, OverwriteResolvable, TextChannel, User, VoiceChannel} from "discord.js";
+import {MessageReaction, OverwriteResolvable, TextChannel, User, VoiceChannel, Message as DiscordMessage} from "discord.js";
 import Interactor, {Message} from "../Interactor";
 import Kernel from "../Kernel";
 import Game from "./Game";
 import Poll from "./interactions/Poll";
 import Player from "./Player";
 import {Role} from "./Role";
+import Choice from "./interactions/Choice";
+import ReactionsInteraction from "./interactions/ReactionsInteraction";
 
 export default class Room {
     private interactor: Interactor
@@ -30,20 +32,15 @@ export default class Room {
     async sendPoll<T>(poll: Poll<T>): Promise<T> {
         const message = await this.interactor.send(poll.generateBlock())
         poll.getReactionsMap().forEach(emoji => message.react(emoji))
-        const guild = message.guild
 
         const onReact = async (reaction: MessageReaction, user: User) => {
-            const member = await guild.members.fetch(user);
-
-            if (message !== reaction.message || user.bot) {
-                return
-            }
-
-            if (this.game.getSpectators().includes(member) || ![...poll.getReactionsMap().values()].includes(reaction.emoji.toString())) {
-                await reaction.users.remove(user)
-            }
-
-            await poll.onReact(reaction, user)
+            await this.processReactionOfReactionsInteraction(
+                poll,
+                message,
+                reaction,
+                user,
+                async () => await poll.onReact(reaction, user)
+            )
         }
 
         this.kernel.client.on('messageReactionAdd', onReact)
@@ -53,6 +50,44 @@ export default class Room {
                 this.kernel.client.removeListener('messageReactionAdd', onReact)
                 resolve(poll.decide())
             }, poll.time * 1000)
+        })
+    }
+
+    private async processReactionOfReactionsInteraction<T>(reactionsInteraction: ReactionsInteraction<T>, message: DiscordMessage, reaction: MessageReaction, user: User, process: () => void) {
+        const member = await reaction.message.guild.members.fetch(user)
+
+        if (message !== reaction.message || user.bot) {
+            return
+        }
+
+        if (this.game.getSpectators().includes(member) || ![...reactionsInteraction.getReactionsMap().values()].includes(reaction.emoji.toString())) {
+            await reaction.users.remove(user)
+        }
+
+        await process()
+    }
+
+    async sendChoice<T>(choice: Choice<T>): Promise<T> {
+        const message = await this.interactor.send(choice.generateBlock())
+        choice.getReactionsMap().forEach(emoji => message.react(emoji))
+
+        return new Promise<T>(resolve => {
+            const onReact = async (reaction: MessageReaction, user: User) => {
+                await this.processReactionOfReactionsInteraction(
+                    choice,
+                    message,
+                    reaction,
+                    user,
+                    () => resolve(choice.onReact(reaction))
+                )
+            }
+
+            this.kernel.client.on('messageReactionAdd', onReact)
+
+            setTimeout(() => {
+                this.kernel.client.removeListener('messageReactionAdd', onReact)
+                resolve(null)
+            }, choice.time * 1000)
         })
     }
 

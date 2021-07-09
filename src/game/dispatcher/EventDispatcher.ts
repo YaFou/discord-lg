@@ -46,4 +46,5 @@ export interface EventsParameters {
     villageVote: []
     start: []
     message: [Message]
+    clairvoyantWakeUp: []
 }

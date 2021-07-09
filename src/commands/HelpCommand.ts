@@ -15,7 +15,9 @@ export default class HelpCommand extends Command {
         }
 
         const interactor = this.kernel.createInteractor(message.channel)
-        const block = new Block(trans('commands.help.title', {}), this.kernel.commands.map(command => [command.name, command.description]))
+        const commands = this.kernel.commands.filter(command => command.hasPermission(message.member))
+        const block = new Block(trans('commands.help.title', {}), commands.map(command => [command.name, command.description]))
+            .setDescription(trans('commands.help.usage', {prefix: this.kernel.commandPrefix}))
         await interactor.send(block)
     }
 }

@@ -1,6 +1,6 @@
 import Command from "./Command";
 import {trans} from "../Translator";
-import {Message, TextChannel} from "discord.js";
+import {GuildMember, Message, TextChannel} from "discord.js";
 import Kernel from "../Kernel";
 
 export default class ClearChannelsCommand extends Command {
@@ -19,5 +19,9 @@ export default class ClearChannelsCommand extends Command {
         })
 
         await this.kernel.createInteractor(message.channel).reply(message, trans('commands.clearchannels.success', {}))
+    }
+
+    hasPermission(member: GuildMember): Boolean {
+        return member.hasPermission('MANAGE_CHANNELS')
     }
 }

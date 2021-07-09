@@ -27,7 +27,7 @@ export default class Kernel {
     private readonly token: string
     private readonly guildManagers: Map<Guild, GuildManager> = new Map()
     readonly commands: Command[]
-    private readonly commandPrefix: string
+    readonly commandPrefix: string
     private helpCommand: Command
     readonly store: FileStore
 
@@ -115,18 +115,26 @@ export default class Kernel {
             return
         }
 
+        if (!(message.channel instanceof TextChannel)) {
+            return
+        }
+
+        const interactor = this.createInteractor(message.channel)
+
         for (const command of this.commands) {
             if (command.name === commandParts[1]) {
+                if (!command.hasPermission(message.member)) {
+                    await interactor.reply(message, trans('commands.forbidden', {}))
+
+                    return
+                }
+
                 await command.execute(message)
 
                 return
             }
         }
 
-        if (!(message.channel instanceof TextChannel)) {
-            return
-        }
-
-        await this.createInteractor(message.channel).reply(message, trans('commands.unknown', {}))
+        await interactor.reply(message, trans('commands.unknown', {}))
     }
 }
