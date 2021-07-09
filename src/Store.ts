@@ -1,5 +1,5 @@
 import Encoder from "./Encoder";
-import {readFileSync, writeFile} from "fs";
+import {readFileSync, writeFile, existsSync} from "fs";
 import {removeElement} from "./Util";
 
 type Id = string
@@ -44,6 +44,13 @@ export class FileStore implements Store {
     private isWriting = false
 
     constructor(private file: string, private encoder: Encoder) {
+        if (!existsSync(file)) {
+            writeFile(file, encoder.encode({}), () => {})
+            this.data = {}
+
+            return
+        }
+
         this.data = encoder.decode(readFileSync(file).toString())
     }
 

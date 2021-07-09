@@ -15,27 +15,35 @@ export default class NextTurnSubscriber implements EventSubscriber {
         ];
     }
 
-    private onNextTurn() {
-        setTimeout(async () => {
-            const currentTurn = this.state.turn
+    private async onNextTurn() {
+        await new Promise<void>(resolve => {
+            setTimeout(async () => {
+                const currentTurn = this.state.turn
 
-            if (this.isVictory()) {
-                return
-            }
+                if (currentTurn === GameTurn.WEREWOLVES_VOTE) {
+                    await this.room.lockToPlayers(this.game.getPlayers())
+                    await this.dispatcher.dispatch('newDay')
+                }
 
-            if (currentTurn === null || currentTurn === GameTurn.VILLAGE_VOTE) {
-                await this.dispatcher.dispatch('sunset')
-                await this.room.lockToRole(...getRolesByCamp(Camps.WEREWOLVES))
-                this.state.turn = GameTurn.WEREWOLVES_VOTE
-                await this.dispatcher.dispatch('werewolvesWakeUp')
-            } else if (currentTurn === GameTurn.WEREWOLVES_VOTE) {
-                await this.room.clearChannel()
-                await this.room.lockToPlayers(this.game.getPlayers())
-                await this.dispatcher.dispatch('newDay')
-                this.state.turn = GameTurn.VILLAGE_VOTE
-                await this.dispatcher.dispatch('villageVote')
-            }
-        }, NEXT_TURN_TIME * 1000)
+                if (this.isVictory()) {
+                    resolve()
+
+                    return
+                }
+
+                if (currentTurn === null || currentTurn === GameTurn.VILLAGE_VOTE) {
+                    await this.dispatcher.dispatch('sunset')
+                    await this.room.lockToRole(...getRolesByCamp(Camps.WEREWOLVES))
+                    this.state.turn = GameTurn.WEREWOLVES_VOTE
+                    await this.dispatcher.dispatch('werewolvesWakeUp')
+                } else if (currentTurn === GameTurn.WEREWOLVES_VOTE) {
+                    this.state.turn = GameTurn.VILLAGE_VOTE
+                    await this.dispatcher.dispatch('villageVote')
+                }
+
+                resolve()
+            }, NEXT_TURN_TIME * 1000)
+        })
     }
 
     private isVictory() {

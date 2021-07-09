@@ -31,7 +31,7 @@ export default class WerewolvesSubscriber implements EventSubscriber {
     }
 
     private async onStart() {
-        const werewolves = this.game.filterPlayersByRoles(...getRolesByCamp(Camps.WEREWOLVES));
+        const werewolves = this.game.getPlayersByRole(...getRolesByCamp(Camps.WEREWOLVES));
 
         werewolves.filter(player => {
             const filteredWerewolves = removeElement(werewolves, player)

@@ -31,6 +31,7 @@ export default class DiscordInteractor implements Interactor {
                         value: this.toString(value)
                     }
                 }))
+                .setDescription(message.description !== null ? this.toString(message.description) : '')
         }
 
         return this.toString(message)

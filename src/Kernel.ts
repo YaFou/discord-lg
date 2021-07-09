@@ -11,6 +11,7 @@ import {FileStore, GameEntry, GuildEntry} from "./Store";
 import ClearChannelsCommand from "./commands/ClearChannelsCommand";
 import Game from "./game/Game";
 import Room from "./game/Room";
+import RolesCommand from "./commands/RolesCommand";
 
 type Options = {
     client: Client,
@@ -42,7 +43,8 @@ export default class Kernel {
             this.helpCommand = new HelpCommand(this),
             new NewGameCommand(this),
             new StartCommand(this),
-            new ClearChannelsCommand(this)
+            new ClearChannelsCommand(this),
+            new RolesCommand(this)
         ]
 
         this.registerGuildManagers().then(() => this.client.on('message', this.onMessage.bind(this)))
@@ -81,7 +83,7 @@ export default class Kernel {
                     room.id,
                     textChannel,
                     voiceChannel
-                )))
+                ), this.client))
             }
 
             this.guildManagers.set(guild, guildManager)

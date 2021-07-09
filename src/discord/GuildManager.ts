@@ -22,7 +22,7 @@ export default class GuildManager {
         const voiceChannel = await this.guild.channels.create(name, {type: 'voice', parent: this.categoryChannel})
         const room = new Room(this.kernel, id, textChannel, voiceChannel)
 
-        const game = new Game(room)
+        const game = new Game(room, this.kernel.client)
         this.games.push(game)
 
         const entryId = `${id}.${textChannel.id}.${voiceChannel.id}`;

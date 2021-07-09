@@ -15,6 +15,8 @@ interface KeyParameters {
     'commands.start.maxPlayersRequirement': {maxPlayers: number}
     'commands.clearchannels.description': {}
     'commands.clearchannels.success': {}
+    'commands.roles.description': {}
+    'commands.roles.title': {}
 
     // GAME | GLOBAL
     'game.global.roomName': { id: number }
@@ -26,6 +28,7 @@ interface KeyParameters {
     'game.sunset': {}
     'game.werewolvesVote.title': {}
     'game.werewolvesVote.success': {player: Stringable}
+    'game.werewolvesVote.littleGirl': {message: Stringable}
     'game.playerDead': {player: Stringable, role: Stringable}
     'game.villageVote.introduction': {}
     'game.villageVote.title': {}
@@ -42,6 +45,8 @@ interface KeyParameters {
     'game.role.villager.description': {}
     'game.role.werewolf': {}
     'game.role.werewolf.description': {}
+    'game.role.littleGirl': {}
+    'game.role.littleGirl.description': {}
 
     // GAME | CAMPS
     'game.camp.village': {}

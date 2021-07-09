@@ -1,5 +1,6 @@
 import EventSubscriber, {EventListener} from "./EventSubscriber";
 import Player from "../Player";
+import {Message} from "discord.js";
 
 export default class EventDispatcher {
     private listeners: [keyof EventsParameters, EventListener<keyof EventsParameters>[]][] = []
@@ -44,4 +45,5 @@ export interface EventsParameters {
     nextTurn: []
     villageVote: []
     start: []
+    message: [Message]
 }

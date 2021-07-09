@@ -23,7 +23,7 @@ export default class Room {
     }
 
     async lockToRole(...roles: Role[]) {
-        const players = this.game.filterPlayersByRoles(...roles)
+        const players = this.game.getPlayersByRole(...roles)
         await this.lockToPlayers(players)
     }
 
@@ -69,7 +69,8 @@ export default class Room {
         const playersPermissions: OverwriteResolvable[] = players.map(player => {
             return {
                 id: player.user,
-                allow: ['VIEW_CHANNEL']
+                allow: ['VIEW_CHANNEL'],
+                deny: ['READ_MESSAGE_HISTORY']
             }
         })
 
@@ -91,8 +92,8 @@ export default class Room {
         ])
     }
 
-    async clearChannel() {
-        const messages = await this.textChannel.messages.fetch({limit: 100})
-        await this.textChannel.bulkDelete(messages)
-    }
+    // async clearChannel() {
+    //     const messages = await this.textChannel.messages.fetch({limit: 100})
+    //     await this.textChannel.bulkDelete(messages)
+    // }
 }

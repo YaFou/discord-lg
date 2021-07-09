@@ -20,7 +20,7 @@ export const Camps = {
     }
 }
 
-const _Roles = {
+export const _Roles = {
     villager: {
         name: trans('game.role.villager', {}),
         description: trans('game.role.villager.description', {}),
@@ -32,6 +32,12 @@ const _Roles = {
         description: trans('game.role.werewolf.description', {}),
         camp: Camps.WEREWOLVES,
         canBeMany: true
+    },
+    littleGirl: {
+        name: trans('game.role.littleGirl', {}),
+        description: trans('game.role.littleGirl.description', {}),
+        camp: Camps.VILLAGE,
+        canBeMany: false
     }
 }
 
