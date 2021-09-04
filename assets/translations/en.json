@@ -32,6 +32,8 @@
     "game.oracle.title": "Which role do you want to discover in your crystal ball?",
     "game.oracle.exposeRole": "Your crystal ball reveals that %player% is **%role%**.",
     "game.oracle.noExposed": "You decide to not look at your crystal ball this night.",
+    "game.hunter.introduction": "On who do you want to shoot your last shot?",
+    "game.hunter.dead": "Before his death, the hunter shot a last shot on %player%. He was **%role%**.",
 
     "game.interactions.poll.selectReaction": "Select the reaction to vote",
     "game.interactions.choice.selectReaction": "Select the reaction to choose",
@@ -49,8 +51,8 @@
     "game.role.oracle.description": "The oracle must win with the village. However, each night, she can discover the role of one villager through her crystal ball.",
     "game.role.hunter": "Hunter",
     "game.role.hunter.description": "The hunter must win with the village. At his death, he will shoot a last shot on a villager.",
-    "game.hunter.introduction": "On who do you want to shoot your last shot?",
-    "game.hunter.dead": "Before his death, the hunter shot a last shot on %player%. He was **%role%**.",
+    "game.role.witch": "",
+    "game.role.witch.description": "",
 
     "game.camp.village": "Village",
     "game.camp.werewolves": "Werewolves",

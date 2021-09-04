@@ -1,5 +1,5 @@
 import EventSubscriber, {EventListener} from "../dispatcher/EventSubscriber";
-import {EventsParameters} from "../dispatcher/EventDispatcher";
+import EventDispatcher, {EventsParameters} from "../dispatcher/EventDispatcher";
 import Room from "../Room";
 import Game from "../Game";
 import {Roles} from "../Role";
@@ -7,8 +7,8 @@ import {trans} from "../../Translator";
 import {ORACLE_CHOICE_TIME} from "../../Settings";
 import PlayerChoice from "../interactions/PlayerChoice";
 
-export default class LittleGirlSubscriber implements EventSubscriber {
-    constructor(private room: Room, private game: Game) {
+export default class OracleSubscriber implements EventSubscriber {
+    constructor(private room: Room, private game: Game, private dispatcher: EventDispatcher) {
     }
 
     getSubscribedEvents(): [keyof EventsParameters, EventListener<keyof EventsParameters>][] {
@@ -16,11 +16,13 @@ export default class LittleGirlSubscriber implements EventSubscriber {
     }
 
     private async onOracleWakeUp() {
-        if (!this.game.hasRole(Roles.oracle)) {
+        if (!this.game.hasRole(Roles.ORACLE)) {
+            await this.dispatcher.dispatch('nextTurn')
+
             return
         }
 
-        const players = this.game.getPlayersByNotRole(Roles.oracle);
+        const players = this.game.getPlayersByNotRole(Roles.ORACLE);
         const choice = new PlayerChoice(trans('game.oracle.title', {}), players, ORACLE_CHOICE_TIME)
         const player = await this.room.sendChoice(choice)
 
@@ -34,5 +36,7 @@ export default class LittleGirlSubscriber implements EventSubscriber {
             player: player.user.toString(),
             role: player.role.name
         }))
+
+        await this.dispatcher.dispatch('nextTurn')
     }
 }

@@ -47,4 +47,5 @@ export interface EventsParameters {
     start: []
     message: [Message]
     oracleWakeUp: []
+    witchWakeUp: []
 }

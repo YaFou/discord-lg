@@ -16,38 +16,34 @@ export default class NextTurnSubscriber implements EventSubscriber {
     }
 
     private async onNextTurn() {
-        // await new Promise<void>(resolve => {
-        //     setTimeout(async () => {
-                const currentTurn = this.state.turn
+        const currentTurn = this.state.turn
 
-                if (currentTurn === GameTurn.WEREWOLVES_VOTE) {
-                    await this.room.lockToPlayers(this.game.getPlayers())
-                    await this.dispatcher.dispatch('newDay')
-                }
+        if (currentTurn === GameTurn.WEREWOLVES_VOTE) {
+            await this.room.lockToPlayers(this.game.getPlayers())
+            await this.dispatcher.dispatch('newDay')
+        }
 
-                if (this.isVictory()) {
-                    // resolve()
+        if (this.isVictory()) {
+            return
+        }
 
-                    return
-                }
-
-                if (currentTurn === null || currentTurn === GameTurn.VILLAGE_VOTE) {
-                    await this.dispatcher.dispatch('sunset')
-                    await this.room.lockToRole(Roles.oracle)
-                    this.state.turn = GameTurn.ORACLE
-                    await this.dispatcher.dispatch('oracleWakeUp')
-                } else if (currentTurn === GameTurn.ORACLE) {
-                    await this.room.lockToRole(...getRolesByCamp(Camps.WEREWOLVES))
-                    this.state.turn = GameTurn.WEREWOLVES_VOTE
-                    await this.dispatcher.dispatch('werewolvesWakeUp')
-                } else if (currentTurn === GameTurn.WEREWOLVES_VOTE) {
-                    this.state.turn = GameTurn.VILLAGE_VOTE
-                    await this.dispatcher.dispatch('villageVote')
-                }
-
-                // resolve()
-        //     }, NEXT_TURN_TIME * 1000)
-        // })
+        if (currentTurn === null || currentTurn === GameTurn.VILLAGE_VOTE) {
+            await this.dispatcher.dispatch('sunset')
+            await this.room.lockToRole(Roles.ORACLE)
+            this.state.turn = GameTurn.ORACLE
+            await this.dispatcher.dispatch('oracleWakeUp')
+        } else if (currentTurn === GameTurn.ORACLE) {
+            await this.room.lockToRole(...getRolesByCamp(Camps.WEREWOLVES))
+            this.state.turn = GameTurn.WEREWOLVES_VOTE
+            await this.dispatcher.dispatch('werewolvesWakeUp')
+        } else if (currentTurn === GameTurn.WEREWOLVES_VOTE) {
+            await this.room.lockToRole(Roles.WITCH)
+            this.state.turn = GameTurn.WITCH
+            await this.dispatcher.dispatch('witchWakeUp')
+        } else if (currentTurn === GameTurn.WITCH) {
+            this.state.turn = GameTurn.VILLAGE_VOTE
+            await this.dispatcher.dispatch('villageVote')
+        }
     }
 
     private isVictory() {

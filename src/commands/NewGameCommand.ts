@@ -24,7 +24,8 @@ export default class NewGameCommand extends Command {
             message,
             trans('commands.newgame.success', {
                 textChannel: room.textChannel.toString(),
-                voiceChannelInvite: voiceChannelInvite.toString()
+                voiceChannelInvite: voiceChannelInvite.toString(),
+                prefix: this.kernel.commandPrefix
             })
         )
     }

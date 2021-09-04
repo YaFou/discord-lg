@@ -2,7 +2,8 @@ import Command from "./Command";
 import Kernel from "../Kernel";
 import {trans} from "../Translator";
 import {Message, TextChannel} from "discord.js";
-import {GameState, GameStatus} from "../game/Game";
+import {GameStatus} from "../game/Game";
+import {MAX_PLAYERS, MIN_PLAYERS} from "../Settings";
 
 export default class StartCommand extends Command {
     constructor(private kernel: Kernel) {
@@ -34,14 +35,14 @@ export default class StartCommand extends Command {
 
         const members = game.room.voiceChannel.members.array();
 
-        if (members.length < 2) {
-            await interactor.reply(message, trans('commands.start.minPlayersRequirement', {minPlayers: 2}))
+        if (members.length < MIN_PLAYERS) {
+            await interactor.reply(message, trans('commands.start.minPlayersRequirement', {minPlayers: MIN_PLAYERS}))
 
             return
         }
 
-        if (members.length > 20) {
-            await interactor.reply(message, trans('commands.start.maxPlayersRequirement', {maxPlayers: 20}))
+        if (members.length > MAX_PLAYERS) {
+            await interactor.reply(message, trans('commands.start.maxPlayersRequirement', {maxPlayers: MAX_PLAYERS}))
 
             return
         }

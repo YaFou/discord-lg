@@ -21,33 +21,39 @@ export const Camps = {
 }
 
 export const Roles = {
-    villager: {
+    VILLAGER: {
         name: trans('game.role.villager', {}),
         description: trans('game.role.villager.description', {}),
         camp: Camps.VILLAGE,
         canBeMany: true
     },
-    werewolf: {
+    WEREWOLF: {
         name: trans('game.role.werewolf', {}),
         description: trans('game.role.werewolf.description', {}),
         camp: Camps.WEREWOLVES,
         canBeMany: true
     },
-    littleGirl: {
+    LITTLE_GIRL: {
         name: trans('game.role.littleGirl', {}),
         description: trans('game.role.littleGirl.description', {}),
         camp: Camps.VILLAGE,
         canBeMany: false
     },
-    oracle: {
+    ORACLE: {
         name: trans('game.role.oracle', {}),
         description: trans('game.role.oracle.description', {}),
         camp: Camps.VILLAGE,
         canBeMany: false
     },
-    hunter: {
+    HUNTER: {
         name: trans('game.role.hunter', {}),
         description: trans('game.role.hunter.description', {}),
+        camp: Camps.VILLAGE,
+        canBeMany: false
+    },
+    WITCH: {
+        name: trans('game.role.witch', {}),
+        description: trans('game.role.witch.description', {}),
         camp: Camps.VILLAGE,
         canBeMany: false
     }

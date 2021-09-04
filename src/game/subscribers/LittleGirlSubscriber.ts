@@ -15,11 +15,11 @@ export default class LittleGirlSubscriber implements EventSubscriber {
     }
 
     private async onMessage(message: Message) {
-        if (!this.game.hasRole(Roles.littleGirl) || this.state.turn !== GameTurn.WEREWOLVES_VOTE) {
+        if (!this.game.hasRole(Roles.LITTLE_GIRL) || this.state.turn !== GameTurn.WEREWOLVES_VOTE) {
             return
         }
 
-        this.game.getPlayersByRole(Roles.littleGirl).forEach(littleGirl => {
+        this.game.getPlayersByRole(Roles.LITTLE_GIRL).forEach(littleGirl => {
             this.room.sendPrivateMessage(littleGirl, trans('game.werewolvesVote.littleGirl', {message: message.cleanContent}))
         })
     }

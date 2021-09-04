@@ -21,9 +21,7 @@ export default class PlayerDeadSubscriber implements EventSubscriber {
             role: player.role.name
         }))
 
-        this.game.removePlayer(player)
-
-        if (player.role === Roles.hunter) {
+        if (player.role === Roles.HUNTER) {
             const choice = new PlayerChoice(trans('game.hunter.introduction', {}), this.game.getPlayers(), HUNTER_CHOICE_TIME)
                 .setRandomOnNoChoice()
                 .setPossibleInteractors([player.user])
@@ -32,6 +30,8 @@ export default class PlayerDeadSubscriber implements EventSubscriber {
             this.game.removePlayer(shotPlayer)
             await this.room.sendMessage(trans('game.hunter.dead', {player: shotPlayer.user.toString(), role: shotPlayer.role.name}))
         }
+
+        this.game.removePlayer(player)
     }
 
     constructor(private room: Room, private game: Game) {

@@ -1,4 +1,11 @@
-import {MessageReaction, OverwriteResolvable, TextChannel, User, VoiceChannel, Message as DiscordMessage} from "discord.js";
+import {
+    Message as DiscordMessage,
+    MessageReaction,
+    OverwriteResolvable,
+    TextChannel,
+    User,
+    VoiceChannel
+} from "discord.js";
 import Interactor, {Message} from "../Interactor";
 import Kernel from "../Kernel";
 import Game from "./Game";
@@ -63,8 +70,10 @@ export default class Room {
         if (
             this.game.getSpectators().includes(member) ||
             ![...reactionsInteraction.getReactionsMap().values()].includes(reaction.emoji.toString()) ||
-            reactionsInteraction.getPossibleInteractors() === null ||
-            !reactionsInteraction.getPossibleInteractors().includes(member)
+            (
+                reactionsInteraction.getPossibleInteractors() !== null &&
+                !reactionsInteraction.getPossibleInteractors().includes(member)
+            )
         ) {
             await reaction.users.remove(user)
         }

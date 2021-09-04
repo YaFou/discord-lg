@@ -32,6 +32,8 @@
     "game.oracle.title": "Quel rôle voulez-vous découvrir dans votre boule de cristal ?",
     "game.oracle.exposeRole": "Votre boule de cristal dévoile que %player% est **%role%**.",
     "game.oracle.noExposed": "Vous n'avez décidé de ne pas regarder dans votre boule de cristal cette nuit.",
+    "game.hunter.introduction": "Sur qui veux-tu tirer ton dernier coup de feu ?",
+    "game.hunter.dead": "Avant sa mort, le chasseur réussi à tirer un dernier coup de feu sur %player%. Il était **%role%**.",
 
     "game.interactions.poll.selectReaction": "Sélectionne la réaction pour voter",
     "game.interactions.choice.selectReaction": "Sélectionne la réaction pour choisir",
@@ -49,8 +51,8 @@
     "game.role.oracle.description": "La voyante doit gagner avec le village. Cependant, chaque nuit, elle peut découvrir le rôle d'un villageois à travers sa boule de cristal.",
     "game.role.hunter": "Chasseur",
     "game.role.hunter.description": "Le chasseur doit gagner avec le village. A sa mort, il tirera un dernier coup de feu sur un villageois.",
-    "game.hunter.introduction": "Sur qui veux-tu tirer ton dernier coup de feu ?",
-    "game.hunter.dead": "Avant sa mort, le chasseur réussi à tirer un dernier coup de feu sur %player%. Il était **%role%**.",
+    "game.role.witch": "Sorcière",
+    "game.role.witch.description": "Tu dois utiliser tes potions",
 
     "game.camp.village": "Village",
     "game.camp.werewolves": "Loups garous",

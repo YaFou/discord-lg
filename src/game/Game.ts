@@ -11,10 +11,10 @@ import NextTurnSubscriber from "./subscribers/NextTurnSubscriber";
 import VillageVoteSubscriber from "./subscribers/VillageVoteSubscriber";
 import EventDispatcher from "./dispatcher/EventDispatcher";
 import {Role} from "./Role";
-import {GAME_DESTROY_TIME} from "../Settings";
-import {Block} from "../Interactor";
 import StartSubscriber from "./subscribers/StartSubscriber";
 import LittleGirlSubscriber from "./subscribers/LittleGirlSubscriber";
+import OracleSubscriber from "./subscribers/OracleSubscriber";
+import WitchSubscriber from "./subscribers/WitchSubscriber";
 
 export default class Game {
     state: GameState
@@ -29,7 +29,12 @@ export default class Game {
             status: GameStatus.WAITING,
             deaths: [],
             day: 1,
-            turn: null
+            turn: null,
+            witch: {
+                hasDeathPotion: true,
+                hasRevivePotion: true
+            },
+            deadByWerewolves: null
         }
     }
 
@@ -46,7 +51,9 @@ export default class Game {
             new PlayerDeadSubscriber(this.room, this),
             new NextTurnSubscriber(this.state, this.dispatcher, this.room, this),
             new VillageVoteSubscriber(this.room, this.dispatcher, this),
-            new LittleGirlSubscriber(this.room, this, this.state)
+            new LittleGirlSubscriber(this.room, this, this.state),
+            new OracleSubscriber(this.room, this, this.dispatcher),
+            new WitchSubscriber(this.room, this, this.state, this.dispatcher)
         )
 
         this.registerEvents()
@@ -108,17 +115,22 @@ export type GameState = {
     status: GameStatus,
     deaths: Player[]
     day: number,
-    turn: GameTurn
+    turn: GameTurn,
+    witch: {
+        hasRevivePotion: Boolean
+        hasDeathPotion: Boolean
+    }
+    deadByWerewolves: Player
 }
 
 export enum GameStatus {
     WAITING,
     PLAYING,
-    FINISHED
 }
 
 export enum GameTurn {
     WEREWOLVES_VOTE,
     VILLAGE_VOTE,
     ORACLE,
+    WITCH,
 }

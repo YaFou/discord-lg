@@ -8,7 +8,7 @@ interface KeyParameters {
     'commands.help.description': {}
     'commands.help.usage': {prefix: Stringable}
     'commands.newgame.description': {prefix: Stringable}
-    'commands.newgame.success': {textChannel: Stringable, voiceChannelInvite: Stringable}
+    'commands.newgame.success': {textChannel: Stringable, voiceChannelInvite: Stringable, prefix: Stringable}
     'commands.start.description': {}
     'commands.start.gameAlreadyStarted': {}
     'commands.start.gameNotFound': {}
@@ -59,6 +59,8 @@ interface KeyParameters {
     'game.role.oracle.description': {}
     'game.role.hunter': {}
     'game.role.hunter.description': {}
+    'game.role.witch': {}
+    'game.role.witch.description': {}
 
     // GAME | CAMPS
     'game.camp.village': {}

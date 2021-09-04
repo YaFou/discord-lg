@@ -26,6 +26,7 @@ export default class WerewolvesSubscriber implements EventSubscriber {
         const player = await this.room.sendPoll(poll)
         await this.room.sendMessage(trans('game.werewolvesVote.success', {player: player.user.toString()}))
         this.state.deaths.push(player)
+        this.state.deadByWerewolves = player
         await this.dispatcher.dispatch('nextTurn')
     }
 
